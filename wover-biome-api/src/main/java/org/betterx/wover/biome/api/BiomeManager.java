@@ -1,5 +1,17 @@
 package org.betterx.wover.biome.api;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.PalettedContainer;
+import net.minecraft.world.level.chunk.PalettedContainerRO;
 import org.betterx.wover.biome.api.builder.BiomeBuilder;
 import org.betterx.wover.biome.api.builder.event.OnBootstrapBiomes;
 import org.betterx.wover.biome.api.data.BiomeData;
@@ -9,44 +21,34 @@ import org.betterx.wover.entrypoint.LibWoverBiome;
 import org.betterx.wover.events.api.Event;
 import org.betterx.wover.events.api.types.OnBootstrapRegistry;
 import org.betterx.wover.state.api.WorldState;
-
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.PalettedContainer;
-import net.minecraft.world.level.chunk.PalettedContainerRO;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class BiomeManager {
-    public static final Event<OnBootstrapRegistry<Biome>> BOOTSTRAP_BIOME_REGISTRY
-            = BiomeManagerImpl.BOOTSTRAP_BIOME_REGISTRY;
-    public static final Event<OnBootstrapBiomes> BOOTSTRAP_BIOMES_WITH_DATA
-            = BiomeManagerImpl.BOOTSTRAP_BIOMES_WITH_DATA;
 
-    public static BiomeKey<BiomeBuilder.Vanilla> vanilla(ResourceLocation location) {
+    public static final Event<
+        OnBootstrapRegistry<Biome>
+    > BOOTSTRAP_BIOME_REGISTRY = BiomeManagerImpl.BOOTSTRAP_BIOME_REGISTRY;
+    public static final Event<OnBootstrapBiomes> BOOTSTRAP_BIOMES_WITH_DATA =
+        BiomeManagerImpl.BOOTSTRAP_BIOMES_WITH_DATA;
+
+    public static BiomeKey<BiomeBuilder.Vanilla> vanilla(Identifier location) {
         return BiomeManagerImpl.vanilla(location);
     }
 
-    public static BiomeKey<BiomeBuilder.Wrapped> wrapped(@NotNull ResourceKey<Biome> key) {
+    public static BiomeKey<BiomeBuilder.Wrapped> wrapped(
+        @NotNull ResourceKey<Biome> key
+    ) {
         return BiomeManagerImpl.wrapped(key);
     }
 
     /**
      * Get {@link BiomeData} for biome.
      *
-     * @param biome - {@link ResourceLocation} of the biome.
+     * @param biome - {@link Identifier} of the biome.
      * @return {@link BiomeData} or null if it was not found.
      */
-    public static @Nullable BiomeData biomeData(ResourceLocation biome) {
+    public static @Nullable BiomeData biomeData(Identifier biome) {
         return biomeData(WorldState.registryAccess(), biome);
     }
 
@@ -54,17 +56,20 @@ public class BiomeManager {
      * Get {@link BiomeData} for biome.
      *
      * @param registryAccess The RegistryAccess
-     * @param biome          - {@link ResourceLocation} of the biome.
+     * @param biome          - {@link Identifier} of the biome.
      * @return {@link BiomeData} or null if it was not found.
      */
-    public static BiomeData biomeData(HolderLookup.Provider registryAccess, ResourceLocation biome) {
+    public static BiomeData biomeData(
+        HolderLookup.Provider registryAccess,
+        Identifier biome
+    ) {
         if (registryAccess == null) return null;
 
         return registryAccess
-                .lookup(Registries.BIOME)
-                .flatMap(r -> r.get(ResourceKey.create(Registries.BIOME, biome)))
-                .map(h -> biomeDataForHolder(registryAccess, h))
-                .orElse(null);
+            .lookup(Registries.BIOME)
+            .flatMap(r -> r.get(ResourceKey.create(Registries.BIOME, biome)))
+            .map(h -> biomeDataForHolder(registryAccess, h))
+            .orElse(null);
     }
 
     /**
@@ -86,12 +91,22 @@ public class BiomeManager {
      * @param biome - {@link Holder<Biome>} from.
      * @return {@link BiomeData} or null if it was not found.
      */
-    public static @Nullable BiomeData biomeDataForHolder(HolderLookup.Provider acc, Holder<Biome> biome) {
+    public static @Nullable BiomeData biomeDataForHolder(
+        HolderLookup.Provider acc,
+        Holder<Biome> biome
+    ) {
         if (acc != null) {
-            final HolderLookup.RegistryLookup<BiomeData> reg = acc.lookupOrThrow(BiomeDataRegistry.BIOME_DATA_REGISTRY);
-            ResourceLocation id = biome.unwrapKey().map(ResourceKey::location).orElse(null);
+            final HolderLookup.RegistryLookup<BiomeData> reg =
+                acc.lookupOrThrow(BiomeDataRegistry.BIOME_DATA_REGISTRY);
+            Identifier id = biome
+                .unwrapKey()
+                .map(ResourceKey::location)
+                .orElse(null);
             if (id != null) {
-                return reg.get(BiomeDataRegistry.createKey(id)).map(Holder.Reference::value).orElse(null);
+                return reg
+                    .get(BiomeDataRegistry.createKey(id))
+                    .map(Holder.Reference::value)
+                    .orElse(null);
             }
         }
         return null;
@@ -104,11 +119,22 @@ public class BiomeManager {
      * @param pos   {@link BlockPos} biome position.
      * @param biome {@link Holder<Biome>} instance. Should be biome from world.
      */
-    public static void setBiome(ChunkAccess chunk, BlockPos pos, Holder<Biome> biome) {
+    public static void setBiome(
+        ChunkAccess chunk,
+        BlockPos pos,
+        Holder<Biome> biome
+    ) {
         final int sectionY = (pos.getY() - chunk.getMinY()) >> 4;
-        final PalettedContainerRO<Holder<Biome>> biomes = chunk.getSection(sectionY).getBiomes();
+        final PalettedContainerRO<Holder<Biome>> biomes = chunk
+            .getSection(sectionY)
+            .getBiomes();
         if (biomes instanceof PalettedContainer<Holder<Biome>> palette) {
-            palette.set((pos.getX() & 15) >> 2, (pos.getY() & 15) >> 2, (pos.getZ() & 15) >> 2, biome);
+            palette.set(
+                (pos.getX() & 15) >> 2,
+                (pos.getY() & 15) >> 2,
+                (pos.getZ() & 15) >> 2,
+                biome
+            );
         } else {
             LibWoverBiome.C.LOG.warn("Unable to change Biome at " + pos);
         }
@@ -121,7 +147,11 @@ public class BiomeManager {
      * @param pos   {@link BlockPos} biome position.
      * @param biome {@link Holder<Biome>} instance. Should be biome from world.
      */
-    public static void setBiome(LevelAccessor level, BlockPos pos, Holder<Biome> biome) {
+    public static void setBiome(
+        LevelAccessor level,
+        BlockPos pos,
+        Holder<Biome> biome
+    ) {
         final ChunkAccess chunk = level.getChunk(pos);
         setBiome(chunk, pos, biome);
     }

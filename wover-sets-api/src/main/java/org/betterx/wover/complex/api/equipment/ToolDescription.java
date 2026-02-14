@@ -12,7 +12,7 @@ import org.betterx.wover.tag.api.predefined.ToolTags;
 
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -80,7 +80,7 @@ public record ToolDescription<I extends Item>(I item, ResourceKey<Item> itemKey,
 
     private static void addRecipe(
             RecipeBuilder.Context context,
-            ResourceLocation location,
+            Identifier location,
             Item item,
             ToolTier tier,
             ToolSlot slot,

@@ -1,12 +1,15 @@
 package org.betterx.wover.item.api;
 
-import org.betterx.wover.item.api.trait.*;
-import org.betterx.wover.item.impl.trait.ItemTraitImpl;
-
+import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -17,14 +20,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.JukeboxSong;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-
-import com.google.common.collect.ImmutableList;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.Consumer;
+import org.betterx.wover.item.api.trait.*;
+import org.betterx.wover.item.impl.trait.ItemTraitImpl;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -37,14 +34,21 @@ import org.jetbrains.annotations.Nullable;
  * @author Quiqueck
  * @since 21.6.0
  */
-public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I, D>> implements ItemTraitLookup {
+public abstract class ItemDefinition<
+    I extends Item,
+    D extends ItemDefinition<I, D>
+> implements ItemTraitLookup {
+
     /**
      * Factory interface for creating items from configuration objects.
      *
      * @param <I> The type of item to create
      * @param <D> The configuration type used to create the item
      */
-    public interface ItemFactory<I extends Item, D extends ItemDefinition<I, D>> {
+    public interface ItemFactory<
+        I extends Item,
+        D extends ItemDefinition<I, D>
+    > {
         /**
          * Creates an item instance from the given configuration.
          *
@@ -85,7 +89,6 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     protected final ItemDefinition.ItemFactory<I, D> itemFactory;
 
-
     /**
      * Creates a new item configuration.
      *
@@ -93,7 +96,11 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      * @param itemName    The name identifier for the item
      * @param itemFactory The factory used to create the item instance
      */
-    protected ItemDefinition(ItemRegistry registry, String itemName, ItemDefinition.ItemFactory<I, D> itemFactory) {
+    protected ItemDefinition(
+        ItemRegistry registry,
+        String itemName,
+        ItemDefinition.ItemFactory<I, D> itemFactory
+    ) {
         this(registry, registry.key(itemName), itemFactory);
     }
 
@@ -105,11 +112,13 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      * @param itemFactory The factory used to create the item instance
      */
     protected ItemDefinition(
-            ItemRegistry registry,
-            ResourceKey<Item> itemKey,
-            ItemDefinition.ItemFactory<I, D> itemFactory
+        ItemRegistry registry,
+        ResourceKey<Item> itemKey,
+        ItemDefinition.ItemFactory<I, D> itemFactory
     ) {
-        assert (registry.C.namespace.equals(itemKey.location().getNamespace()));
+        assert (registry.C.namespace.equals(
+                itemKey.identifier().getNamespace()
+            ));
         this.itemKey = itemKey;
         this.properties = new Item.Properties().setId(this.itemKey);
         this.itemFactory = itemFactory;
@@ -121,7 +130,7 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      * This method is called automatically by {@link #build()} and should be implemented
      * by subclasses to set up any last-minute properties or validations.
      */
-    abstract protected void beforeBuild();
+    protected abstract void beforeBuild();
 
     /**
      * Called before the item is registered to allow subclasses to perform any final modifications.
@@ -132,7 +141,7 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      * @param item The built item instance that will be registered
      * @return The item instance (potentially modified) that should be registered
      */
-    abstract protected I beforeRegister(I item);
+    protected abstract I beforeRegister(I item);
 
     /**
      * Builds the item instance using the configured properties.
@@ -152,13 +161,18 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
             for (var configuredTrait : this.traits) {
                 this.configurePropertiesUnchecked(configuredTrait);
 
-                final RuntimeItemTrait<I, ?> runtimeTrait = this.forRuntimeUnchecked(configuredTrait);
+                final RuntimeItemTrait<I, ?> runtimeTrait =
+                    this.forRuntimeUnchecked(configuredTrait);
                 if (runtimeTrait != null) runtimeTraits.add(runtimeTrait);
             }
         } else runtimeTraits = null;
 
         if (this.attributes != null) {
-            propertySetters.add((properties) -> properties.attributes(new ItemAttributeModifiers(this.attributes.build())));
+            propertySetters.add(properties ->
+                properties.attributes(
+                    new ItemAttributeModifiers(this.attributes.build())
+                )
+            );
         }
 
         // Apply all property setters to the properties
@@ -169,7 +183,11 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
         I item = itemFactory.createItem((D) this);
 
         // If runtime traits were collected, set them on the item
-        if (runtimeTraits != null && !runtimeTraits.isEmpty() && item instanceof ItemWithTraits<?>) {
+        if (
+            runtimeTraits != null &&
+            !runtimeTraits.isEmpty() &&
+            item instanceof ItemWithTraits<?>
+        ) {
             ((ItemWithTraits<I>) item).wover_setItemTraits(runtimeTraits);
         }
 
@@ -186,13 +204,13 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
     @SuppressWarnings("unchecked")
     public final I buildAndRegister() {
         I item = this.beforeRegister(this.build());
-        final TagKey<Item>[] tags = this.tags == null ? null : this.tags.toArray(TagKey[]::new);
+        final TagKey<Item>[] tags =
+            this.tags == null ? null : this.tags.toArray(TagKey[]::new);
         this.registry.register(this.itemKey, item, tags);
 
         // If traits are defined, call afterItemRegistration for each trait
         if (this.traits != null) {
             for (var trait : this.traits) {
-
                 this.afterItemRegistrationUnchecked(item, trait);
             }
         }
@@ -208,9 +226,7 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      * @return This configuration instance for method chaining
      */
     @SuppressWarnings("unchecked")
-    public D addTrait(
-            @Nullable ItemTrait<?, ?> trait
-    ) {
+    public D addTrait(@Nullable ItemTrait<?, ?> trait) {
         if (trait == null) {
             // Skip null traits
             return (D) this;
@@ -222,9 +238,7 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
         return (D) this;
     }
 
-    public D addTrait(
-            @Nullable List<ItemTrait<?, ?>> traits
-    ) {
+    public D addTrait(@Nullable List<ItemTrait<?, ?>> traits) {
         if (traits == null) {
             return (D) this;
         }
@@ -234,11 +248,15 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
         return (D) this;
     }
 
-    public <T extends ItemTrait<? super I, ?>> D addTrait(ItemTraitBuilder.WithDefault<?, ?> traitBuilder) {
+    public <T extends ItemTrait<? super I, ?>> D addTrait(
+        ItemTraitBuilder.WithDefault<?, ?> traitBuilder
+    ) {
         return this.addTrait(traitBuilder.withDefault());
     }
 
-    public <T extends ItemTrait<? super I, ?>> D addTrait(ItemTraitBuilder.WithDefaults<?, ?> traitBuilder) {
+    public <T extends ItemTrait<? super I, ?>> D addTrait(
+        ItemTraitBuilder.WithDefaults<?, ?> traitBuilder
+    ) {
         return this.addTrait(traitBuilder.withDefault());
     }
 
@@ -304,14 +322,20 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
     private ImmutableList.Builder<ItemAttributeModifiers.Entry> attributes;
 
     public D addAttribute(
-            Holder<Attribute> holder,
-            AttributeModifier attributeModifier,
-            EquipmentSlotGroup equipmentSlotGroup
+        Holder<Attribute> holder,
+        AttributeModifier attributeModifier,
+        EquipmentSlotGroup equipmentSlotGroup
     ) {
         if (attributes == null) {
             attributes = ImmutableList.builder();
         }
-        attributes.add(new ItemAttributeModifiers.Entry(holder, attributeModifier, equipmentSlotGroup));
+        attributes.add(
+            new ItemAttributeModifiers.Entry(
+                holder,
+                attributeModifier,
+                equipmentSlotGroup
+            )
+        );
         return (D) this;
     }
 
@@ -325,10 +349,10 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
         return this.tags.toArray(TagKey[]::new);
     }
 
-
     // **********************************************************************
     // Redirect all (but setId) Item.Properties methods to this.properties
-    protected List<Consumer<Item.Properties>> propertySetters = new LinkedList<>();
+    protected List<Consumer<Item.Properties>> propertySetters =
+        new LinkedList<>();
 
     /**
      * Sets the item that this item converts to when used in crafting.
@@ -338,7 +362,9 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D usingConvertsTo(Item convertToItem) {
-        propertySetters.add((properties) -> properties.usingConvertsTo(convertToItem));
+        propertySetters.add(properties ->
+            properties.usingConvertsTo(convertToItem)
+        );
         return (D) this;
     }
 
@@ -350,7 +376,9 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D useCooldown(float cooldownSeconds) {
-        propertySetters.add((properties) -> properties.useCooldown(cooldownSeconds));
+        propertySetters.add(properties ->
+            properties.useCooldown(cooldownSeconds)
+        );
         return (D) this;
     }
 
@@ -362,7 +390,7 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D stacksTo(int maxStackSize) {
-        propertySetters.add((properties) -> properties.stacksTo(maxStackSize));
+        propertySetters.add(properties -> properties.stacksTo(maxStackSize));
         return (D) this;
     }
 
@@ -375,7 +403,7 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D durability(int maxDurability) {
-        propertySetters.add((properties) -> properties.durability(maxDurability));
+        propertySetters.add(properties -> properties.durability(maxDurability));
         return (D) this;
     }
 
@@ -387,7 +415,9 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D craftRemainder(Item remainderItem) {
-        propertySetters.add((properties) -> properties.craftRemainder(remainderItem));
+        propertySetters.add(properties ->
+            properties.craftRemainder(remainderItem)
+        );
         return (D) this;
     }
 
@@ -399,7 +429,7 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D rarity(Rarity itemRarity) {
-        propertySetters.add((properties) -> properties.rarity(itemRarity));
+        propertySetters.add(properties -> properties.rarity(itemRarity));
         return (D) this;
     }
 
@@ -410,7 +440,7 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D fireResistant() {
-        propertySetters.add((properties) -> properties.fireResistant());
+        propertySetters.add(properties -> properties.fireResistant());
         return (D) this;
     }
 
@@ -422,7 +452,7 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D jukeboxPlayable(ResourceKey<JukeboxSong> songKey) {
-        propertySetters.add((properties) -> properties.jukeboxPlayable(songKey));
+        propertySetters.add(properties -> properties.jukeboxPlayable(songKey));
         return (D) this;
     }
 
@@ -435,7 +465,9 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D enchantable(int enchantability) {
-        propertySetters.add((properties) -> properties.enchantable(enchantability));
+        propertySetters.add(properties ->
+            properties.enchantable(enchantability)
+        );
         return (D) this;
     }
 
@@ -447,7 +479,7 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D repairable(Item repairItem) {
-        propertySetters.add((properties) -> properties.repairable(repairItem));
+        propertySetters.add(properties -> properties.repairable(repairItem));
         return (D) this;
     }
 
@@ -459,7 +491,7 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D repairable(TagKey<Item> repairTag) {
-        propertySetters.add((properties) -> properties.repairable(repairTag));
+        propertySetters.add(properties -> properties.repairable(repairTag));
         return (D) this;
     }
 
@@ -471,7 +503,7 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D equippable(EquipmentSlot slot) {
-        propertySetters.add((properties) -> properties.equippable(slot));
+        propertySetters.add(properties -> properties.equippable(slot));
         return (D) this;
     }
 
@@ -483,7 +515,9 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D equippableUnswappable(EquipmentSlot slot) {
-        propertySetters.add((properties) -> properties.equippableUnswappable(slot));
+        propertySetters.add(properties ->
+            properties.equippableUnswappable(slot)
+        );
         return (D) this;
     }
 
@@ -495,7 +529,9 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D requiredFeatures(FeatureFlag... requiredFlags) {
-        propertySetters.add((properties) -> properties.requiredFeatures(requiredFlags));
+        propertySetters.add(properties ->
+            properties.requiredFeatures(requiredFlags)
+        );
         return (D) this;
     }
 
@@ -507,7 +543,9 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D overrideDescription(String descriptionKey) {
-        propertySetters.add((properties) -> properties.overrideDescription(descriptionKey));
+        propertySetters.add(properties ->
+            properties.overrideDescription(descriptionKey)
+        );
         return (D) this;
     }
 
@@ -518,7 +556,9 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D useBlockDescriptionPrefix() {
-        propertySetters.add((properties) -> properties.useBlockDescriptionPrefix());
+        propertySetters.add(properties ->
+            properties.useBlockDescriptionPrefix()
+        );
         return (D) this;
     }
 
@@ -529,7 +569,9 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D useItemDescriptionPrefix() {
-        propertySetters.add((properties) -> properties.useItemDescriptionPrefix());
+        propertySetters.add(properties ->
+            properties.useItemDescriptionPrefix()
+        );
         return (D) this;
     }
 
@@ -538,7 +580,7 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      *
      * @return The resource location of the item's model
      */
-    public ResourceLocation effectiveModel() {
+    public Identifier effectiveModel() {
         return this.properties.effectiveModel();
     }
 
@@ -551,8 +593,13 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      * @return This configuration instance for method chaining
      */
     @SuppressWarnings("unchecked")
-    public <T> D component(DataComponentType<T> componentType, T componentData) {
-        propertySetters.add((properties) -> properties.component(componentType, componentData));
+    public <T> D component(
+        DataComponentType<T> componentType,
+        T componentData
+    ) {
+        propertySetters.add(properties ->
+            properties.component(componentType, componentData)
+        );
         return (D) this;
     }
 
@@ -564,7 +611,9 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
      */
     @SuppressWarnings("unchecked")
     public D attributes(ItemAttributeModifiers attributeModifiers) {
-        propertySetters.add((properties) -> properties.attributes(attributeModifiers));
+        propertySetters.add(properties ->
+            properties.attributes(attributeModifiers)
+        );
         return (D) this;
     }
 
@@ -578,18 +627,15 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
         return this.properties;
     }
 
-
     // Helper methods to handle generic type casting
     @SuppressWarnings("unchecked")
-    private void configurePropertiesUnchecked(
-            ItemTrait<? super I, ?> trait
-    ) {
+    private void configurePropertiesUnchecked(ItemTrait<? super I, ?> trait) {
         ((ItemTrait<I, ?>) trait).configure((D) this);
     }
 
     @SuppressWarnings("unchecked")
     private RuntimeItemTrait<I, ?> forRuntimeUnchecked(
-            ItemTrait<? super I, ?> trait
+        ItemTrait<? super I, ?> trait
     ) {
         // Cast is safe because the trait can work with B (since B extends the super type)
         return (RuntimeItemTrait<I, ?>) trait.forRuntime();
@@ -597,8 +643,8 @@ public abstract class ItemDefinition<I extends Item, D extends ItemDefinition<I,
 
     @SuppressWarnings("unchecked")
     private void afterItemRegistrationUnchecked(
-            I item,
-            ItemTrait<? super I, ?> trait
+        I item,
+        ItemTrait<? super I, ?> trait
     ) {
         // Cast is safe because the trait can work with B (since B extends the super type)
         ((ItemTrait<I, ?>) trait).afterItemRegistration(item, (D) this);

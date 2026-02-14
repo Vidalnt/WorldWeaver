@@ -5,7 +5,7 @@ import org.betterx.wover.datagen.api.PackBuilder;
 import org.betterx.wover.datagen.api.WoverDataGenEntryPoint;
 import org.betterx.wover.testmod.entrypoint.TestModWoverSurface;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 
@@ -29,7 +29,7 @@ public class TestModWoverSurfaceDatagen extends WoverDataGenEntryPoint {
     void onInitializeAddonDatapack(
             FabricDataGenerator fabricDataGenerator,
             FabricDataGenerator.Pack pack,
-            ResourceLocation location
+            Identifier location
     ) {
         modCore().log.info("Initializing addon datapack: " + location);
     }

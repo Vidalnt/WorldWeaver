@@ -1,21 +1,17 @@
 package org.betterx.wover.datagen.api;
 
-import org.betterx.wover.core.api.ModCore;
-
 import com.mojang.serialization.Lifecycle;
-import net.minecraft.core.*;
-import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.resources.ResourceKey;
-
-import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
+import net.minecraft.core.*;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.ResourceKey;
+import org.betterx.wover.core.api.ModCore;
 import org.jetbrains.annotations.ApiStatus;
-
 
 /**
  * Handles the boostrapping as well as the serialization of a {@link Registry} to
@@ -24,7 +20,10 @@ import org.jetbrains.annotations.ApiStatus;
  *
  * @param <T> The element type of the registry.
  */
-public abstract class WoverRegistryContentProvider<T> extends WoverRegistryProvider<T> {
+public abstract class WoverRegistryContentProvider<
+    T
+> extends WoverRegistryProvider<T> {
+
     private final List<ResourceKey<T>> content;
 
     /**
@@ -35,9 +34,9 @@ public abstract class WoverRegistryContentProvider<T> extends WoverRegistryProvi
      * @param registryKey The Key to the Registry.
      */
     public WoverRegistryContentProvider(
-            ModCore modCore,
-            String title,
-            ResourceKey<Registry<T>> registryKey
+        ModCore modCore,
+        String title,
+        ResourceKey<Registry<T>> registryKey
     ) {
         super(modCore, title, registryKey);
         this.content = new LinkedList<>();
@@ -61,13 +60,19 @@ public abstract class WoverRegistryContentProvider<T> extends WoverRegistryProvi
     private void wrappedBoostrap(BootstrapContext<T> context) {
         BootstrapContext<T> wrapped = new BootstrapContext<T>() {
             @Override
-            public Holder.Reference<T> register(ResourceKey<T> resourceKey, T object, Lifecycle lifecycle) {
+            public Holder.Reference<T> register(
+                ResourceKey<T> resourceKey,
+                T object,
+                Lifecycle lifecycle
+            ) {
                 addContent(resourceKey);
                 return context.register(resourceKey, object, lifecycle);
             }
 
             @Override
-            public <S> HolderGetter<S> lookup(ResourceKey<? extends Registry<? extends S>> resourceKey) {
+            public <S> HolderGetter<S> lookup(
+                ResourceKey<? extends Registry<? extends S>> resourceKey
+            ) {
                 return context.lookup(resourceKey);
             }
         };
@@ -100,12 +105,15 @@ public abstract class WoverRegistryContentProvider<T> extends WoverRegistryProvi
     @ApiStatus.Internal
     @Override
     public final FabricDynamicRegistryProvider getProvider(
-            FabricDataOutput output,
-            CompletableFuture<HolderLookup.Provider> registriesFuture
+        FabricDataOutput output,
+        CompletableFuture<HolderLookup.Provider> registriesFuture
     ) {
         return new FabricDynamicRegistryProvider(output, registriesFuture) {
             @Override
-            protected void configure(HolderLookup.Provider registries, Entries entries) {
+            protected void configure(
+                HolderLookup.Provider registries,
+                Entries entries
+            ) {
                 final var registry = registries.lookupOrThrow(registryKey);
                 int count = 0;
                 for (var key : content) {
@@ -115,7 +123,14 @@ public abstract class WoverRegistryContentProvider<T> extends WoverRegistryProvi
                         count++;
                     }
                 }
-                modCore.log.info("[" + count + " / " + content.size() + "] " + registryKey.location());
+                modCore.log.info(
+                    "[" +
+                        count +
+                        " / " +
+                        content.size() +
+                        "] " +
+                        registryKey.identifier()
+                );
             }
 
             @Override

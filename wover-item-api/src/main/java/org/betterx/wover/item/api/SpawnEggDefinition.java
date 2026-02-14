@@ -10,7 +10,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.gameevent.GameEvent;
-
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -33,15 +32,19 @@ import org.jetbrains.annotations.NotNull;
  * @author WorldWeaver
  * @since 1.21.6
  */
-public class SpawnEggDefinition<I extends SpawnEggItem> extends ItemDefinition<I, SpawnEggDefinition<I>> {
+public class SpawnEggDefinition<
+    I extends SpawnEggItem
+> extends ItemDefinition<I, SpawnEggDefinition<I>> {
+
     /**
      * Factory interface for creating spawn egg items from configuration objects.
      * Extends the base ItemFactory to work specifically with SpawnEggDefinition.
      *
      * @param <I> The type of spawn egg item to create
      */
-    public interface ItemFactory<I extends SpawnEggItem> extends ItemDefinition.ItemFactory<I, SpawnEggDefinition<I>> {
-    }
+    public interface ItemFactory<
+        I extends SpawnEggItem
+    > extends ItemDefinition.ItemFactory<I, SpawnEggDefinition<I>> {}
 
     /**
      * Default dispenser behavior for spawn eggs that enables automatic entity spawning.
@@ -65,17 +68,22 @@ public class SpawnEggDefinition<I extends SpawnEggItem> extends ItemDefinition<I
      * @see DispenserBlock#registerBehavior(net.minecraft.world.item.Item, net.minecraft.core.dispenser.DispenseItemBehavior)
      * @see EntitySpawnReason#DISPENSER
      */
-    public static final DefaultDispenseItemBehavior DISPENSE_SPAWN_EGG_BEHAVIOUR = new DefaultDispenseItemBehavior() {
-        @Override
-        public @NotNull ItemStack execute(BlockSource blockSource, ItemStack stack) {
-            Direction direction = blockSource.state().getValue(DispenserBlock.FACING);
-            EntityType<?> entityType = ((SpawnEggItem) stack.getItem()).getType(
-                    blockSource.level().registryAccess(),
-                    stack
-            );
+    public static final DefaultDispenseItemBehavior DISPENSE_SPAWN_EGG_BEHAVIOUR =
+        new DefaultDispenseItemBehavior() {
+            @Override
+            public @NotNull ItemStack execute(
+                BlockSource blockSource,
+                ItemStack stack
+            ) {
+                Direction direction = blockSource
+                    .state()
+                    .getValue(DispenserBlock.FACING);
+                EntityType<?> entityType = (
+                    (SpawnEggItem) stack.getItem()
+                ).getType(stack);
 
-            try {
-                entityType.spawn(
+                try {
+                    entityType.spawn(
                         blockSource.level(),
                         stack,
                         null,
@@ -83,17 +91,23 @@ public class SpawnEggDefinition<I extends SpawnEggItem> extends ItemDefinition<I
                         EntitySpawnReason.DISPENSER,
                         direction != Direction.UP,
                         false
-                );
-            } catch (Exception var6) {
-                LOGGER.error("Error while dispensing spawn egg from dispenser at {}", blockSource.pos(), var6);
-                return ItemStack.EMPTY;
-            }
+                    );
+                } catch (Exception var6) {
+                    LOGGER.error(
+                        "Error while dispensing spawn egg from dispenser at {}",
+                        blockSource.pos(),
+                        var6
+                    );
+                    return ItemStack.EMPTY;
+                }
 
-            stack.shrink(1);
-            blockSource.level().gameEvent(null, GameEvent.ENTITY_PLACE, blockSource.pos());
-            return stack;
-        }
-    };
+                stack.shrink(1);
+                blockSource
+                    .level()
+                    .gameEvent(null, GameEvent.ENTITY_PLACE, blockSource.pos());
+                return stack;
+            }
+        };
 
     /**
      * The entity type that this spawn egg will create when used
@@ -118,9 +132,9 @@ public class SpawnEggDefinition<I extends SpawnEggItem> extends ItemDefinition<I
      * @param itemFactory The factory used to create the spawn egg item instance
      */
     protected SpawnEggDefinition(
-            ItemRegistry registry,
-            String eggName,
-            ItemDefinition.ItemFactory<I, SpawnEggDefinition<I>> itemFactory
+        ItemRegistry registry,
+        String eggName,
+        ItemDefinition.ItemFactory<I, SpawnEggDefinition<I>> itemFactory
     ) {
         super(registry, eggName, itemFactory);
     }
@@ -135,7 +149,10 @@ public class SpawnEggDefinition<I extends SpawnEggItem> extends ItemDefinition<I
     @Override
     protected void beforeBuild() {
         if (this.entityType == null) {
-            throw new IllegalStateException("Entity type must be set before building spawn egg for: " + this.itemKey);
+            throw new IllegalStateException(
+                "Entity type must be set before building spawn egg for: " +
+                    this.itemKey
+            );
         }
     }
 
@@ -159,7 +176,9 @@ public class SpawnEggDefinition<I extends SpawnEggItem> extends ItemDefinition<I
      * @param entityType The entity type to spawn when this egg is used
      * @return This configuration instance for method chaining
      */
-    public SpawnEggDefinition<I> entityType(EntityType<? extends Mob> entityType) {
+    public SpawnEggDefinition<I> entityType(
+        EntityType<? extends Mob> entityType
+    ) {
         this.entityType = entityType;
         return this;
     }
@@ -249,10 +268,9 @@ public class SpawnEggDefinition<I extends SpawnEggItem> extends ItemDefinition<I
      * @param config The spawn egg configuration containing entity type, colors, and properties
      * @return A new SpawnEggItem instance configured with the provided settings
      */
-    public static SpawnEggItem createSpawnEgg(SpawnEggDefinition<SpawnEggItem> config) {
-        return new SpawnEggItem(
-                config.entityType,
-                config.getProperties()
-        );
+    public static SpawnEggItem createSpawnEgg(
+        SpawnEggDefinition<SpawnEggItem> config
+    ) {
+        return new SpawnEggItem(config.getProperties());
     }
 }

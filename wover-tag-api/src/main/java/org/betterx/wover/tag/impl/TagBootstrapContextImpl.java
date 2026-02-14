@@ -1,28 +1,32 @@
 package org.betterx.wover.tag.impl;
 
-import org.betterx.wover.entrypoint.LibWoverTag;
-import org.betterx.wover.tag.api.TagRegistry;
-import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
-import org.betterx.wover.tag.api.event.context.TagElementWrapper;
-
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
+import org.betterx.wover.entrypoint.LibWoverTag;
+import org.betterx.wover.tag.api.TagRegistry;
+import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
+import org.betterx.wover.tag.api.event.context.TagElementWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class TagBootstrapContextImpl<T, P extends TagBootstrapContext<T>> implements TagBootstrapContext<T> {
+public class TagBootstrapContextImpl<
+    T,
+    P extends TagBootstrapContext<T>
+> implements TagBootstrapContext<T> {
+
     private final Map<TagKey<T>, TagSet<T>> tags = new ConcurrentHashMap<>();
     private final @Nullable TagRegistryImpl<T, P> tagRegistry;
 
-    protected TagBootstrapContextImpl(@Nullable TagRegistryImpl<T, P> tagRegistry) {
+    protected TagBootstrapContextImpl(
+        @Nullable TagRegistryImpl<T, P> tagRegistry
+    ) {
         this.tagRegistry = tagRegistry;
     }
 
@@ -33,28 +37,37 @@ public class TagBootstrapContextImpl<T, P extends TagBootstrapContext<T>> implem
         }
     }
 
-    protected static final ConcurrentHashMap<TagRegistry, TagBootstrapContextImpl> CACHE = new ConcurrentHashMap<>();
+    protected static final ConcurrentHashMap<
+        TagRegistry,
+        TagBootstrapContextImpl
+    > CACHE = new ConcurrentHashMap<>();
 
     public static void invalidateCaches() {
         LibWoverTag.C.log.debug("Invalidating TagBootstrapContext Caches");
         CACHE.clear();
     }
 
-    protected static <T, P extends TagBootstrapContext<T>, R extends TagRegistryImpl<T, P>> TagBootstrapContextImpl<T, P> create(
-            @NotNull R tagRegistry,
-            boolean initAll,
-            Function<R, TagBootstrapContextImpl<T, P>> factory
+    protected static <
+        T,
+        P extends TagBootstrapContext<T>,
+        R extends TagRegistryImpl<T, P>
+    > TagBootstrapContextImpl<T, P> create(
+        @NotNull R tagRegistry,
+        boolean initAll,
+        Function<R, TagBootstrapContextImpl<T, P>> factory
     ) {
-        final TagBootstrapContextImpl<?, ?> registry
-                = CACHE.computeIfAbsent(tagRegistry, (r) -> factory.apply(tagRegistry));
+        final TagBootstrapContextImpl<?, ?> registry = CACHE.computeIfAbsent(
+            tagRegistry,
+            r -> factory.apply(tagRegistry)
+        );
         if (initAll) registry.clearAll();
         return (TagBootstrapContextImpl<T, P>) registry;
     }
 
-    static <T, P extends TagBootstrapContext<T>> TagBootstrapContextImpl<T, P> create(
-            @NotNull TagRegistryImpl<T, P> tagRegistry,
-            boolean initAll
-    ) {
+    static <T, P extends TagBootstrapContext<T>> TagBootstrapContextImpl<
+        T,
+        P
+    > create(@NotNull TagRegistryImpl<T, P> tagRegistry, boolean initAll) {
         return create(tagRegistry, initAll, TagBootstrapContextImpl::new);
     }
 
@@ -83,9 +96,10 @@ public class TagBootstrapContextImpl<T, P extends TagBootstrapContext<T>> implem
     protected void add(TagKey<T> tagID, boolean optional, T... elements) {
         TagSet<T> set = getSetForTag(tagID);
         for (T element : elements) {
-            final ResourceLocation id = tagRegistry.locationProvider.get(element);
+            final Identifier id = tagRegistry.locationProvider.get(element);
             if (id != null) {
-                final TagElementWrapperImpl<T> wrapper = new TagElementWrapperImpl<>(id, false, !optional);
+                final TagElementWrapperImpl<T> wrapper =
+                    new TagElementWrapperImpl<>(id, false, !optional);
                 set.add(wrapper);
             }
         }
@@ -115,12 +129,17 @@ public class TagBootstrapContextImpl<T, P extends TagBootstrapContext<T>> implem
         add(tagID, true, tags);
     }
 
-    protected void add(TagKey<T> tagID, boolean optional, TagKey<T>... tagElements) {
+    protected void add(
+        TagKey<T> tagID,
+        boolean optional,
+        TagKey<T>... tagElements
+    ) {
         final TagSet<T> set = getSetForTag(tagID);
         for (TagKey<T> element : tagElements) {
-            final ResourceLocation id = element.location();
+            final Identifier id = element.location();
             if (id != null) {
-                final TagElementWrapperImpl<T> wrapper = new TagElementWrapperImpl<>(id, true, !optional);
+                final TagElementWrapperImpl<T> wrapper =
+                    new TagElementWrapperImpl<>(id, true, !optional);
                 set.add(wrapper);
             }
         }
@@ -144,38 +163,40 @@ public class TagBootstrapContextImpl<T, P extends TagBootstrapContext<T>> implem
         synchronized (this) {
             final TagSet<T> set = getSetForTag(tagID);
             for (ResourceKey<T> element : elements) {
-                final ResourceLocation id = element.location();
+                final Identifier id = element.identifier();
 
                 if (id != null) {
-                    final TagElementWrapperImpl<T> wrapper = new TagElementWrapperImpl<>(id, false, !optional);
+                    final TagElementWrapperImpl<T> wrapper =
+                        new TagElementWrapperImpl<>(id, false, !optional);
                     set.add(wrapper);
                 }
             }
         }
     }
 
-
     public boolean contains(TagKey<T> tagID, T element) {
         final TagSet<T> set = getSetForTag(tagID);
-        final ResourceLocation id = tagRegistry.locationProvider.get(element);
+        final Identifier id = tagRegistry.locationProvider.get(element);
         if (id != null) {
             for (var entry : set)
                 if (!entry.tag()) {
-                    if (id.equals(entry.id()))
-                        return true;
+                    if (id.equals(entry.id())) return true;
                 }
         }
         return false;
     }
 
-    public void forEach(BiConsumer<TagKey<T>, List<TagElementWrapper<T>>> consumer) {
+    public void forEach(
+        BiConsumer<TagKey<T>, List<TagElementWrapper<T>>> consumer
+    ) {
         for (var entry : tags.entrySet()) {
             consumer.accept(
-                    entry.getKey(),
-                    entry.getValue()
-                         .stream()
-                         .sorted(Comparator.comparing(TagElementWrapper::id))
-                         .toList()
+                entry.getKey(),
+                entry
+                    .getValue()
+                    .stream()
+                    .sorted(Comparator.comparing(TagElementWrapper::id))
+                    .toList()
             );
         }
     }
@@ -194,9 +215,13 @@ public class TagBootstrapContextImpl<T, P extends TagBootstrapContext<T>> implem
                 b.append("    - ").append(element).append("\n");
             }
         }
-        return "TagElementProviderImpl{" +
-                "tagRegistry=" + tagRegistry +
-                ", tags=\n" + b.toString() +
-                '}';
+        return (
+            "TagElementProviderImpl{" +
+            "tagRegistry=" +
+            tagRegistry +
+            ", tags=\n" +
+            b.toString() +
+            '}'
+        );
     }
 }

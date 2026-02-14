@@ -2,7 +2,7 @@ package org.betterx.wover.item.api;
 
 import org.betterx.wover.item.api.smithing.SmithingTemplates;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.SmithingTemplateItem;
 
 import java.util.List;
@@ -41,12 +41,12 @@ public class SmithingTemplateDefinition<I extends SmithingTemplateItem> extends 
     /**
      * List of resource locations for base slot empty icons
      */
-    protected List<ResourceLocation> baseSlotEmptyIcons;
+    protected List<Identifier> baseSlotEmptyIcons;
 
     /**
      * List of resource locations for additional slot empty icons
      */
-    protected List<ResourceLocation> additionalSlotEmptyIcons;
+    protected List<Identifier> additionalSlotEmptyIcons;
 
     /**
      * The template path/name used for generating descriptions
@@ -107,7 +107,7 @@ public class SmithingTemplateDefinition<I extends SmithingTemplateItem> extends 
      * @param icons List of resource locations pointing to the base slot empty icon textures
      * @return This configuration instance for method chaining
      */
-    public SmithingTemplateDefinition<I> baseSlotEmptyIcons(List<ResourceLocation> icons) {
+    public SmithingTemplateDefinition<I> baseSlotEmptyIcons(List<Identifier> icons) {
         this.baseSlotEmptyIcons = icons;
         return this;
     }
@@ -119,7 +119,7 @@ public class SmithingTemplateDefinition<I extends SmithingTemplateItem> extends 
      * @param icons List of resource locations pointing to the additional slot empty icon textures
      * @return This configuration instance for method chaining
      */
-    public SmithingTemplateDefinition<I> additionalSlotEmptyIcons(List<ResourceLocation> icons) {
+    public SmithingTemplateDefinition<I> additionalSlotEmptyIcons(List<Identifier> icons) {
         this.additionalSlotEmptyIcons = icons;
         return this;
     }
@@ -133,8 +133,8 @@ public class SmithingTemplateDefinition<I extends SmithingTemplateItem> extends 
      * @return This configuration instance for method chaining
      */
     public SmithingTemplateDefinition<I> slotIcons(
-            List<ResourceLocation> baseIcons,
-            List<ResourceLocation> additionalIcons
+            List<Identifier> baseIcons,
+            List<Identifier> additionalIcons
     ) {
         this.baseSlotEmptyIcons = baseIcons;
         this.additionalSlotEmptyIcons = additionalIcons;
@@ -158,7 +158,7 @@ public class SmithingTemplateDefinition<I extends SmithingTemplateItem> extends 
      *
      * @return List of resource locations for base slot empty icons, or null if not set
      */
-    public List<ResourceLocation> getBaseSlotEmptyIcons() {
+    public List<Identifier> getBaseSlotEmptyIcons() {
         return this.baseSlotEmptyIcons;
     }
 
@@ -167,7 +167,7 @@ public class SmithingTemplateDefinition<I extends SmithingTemplateItem> extends 
      *
      * @return List of resource locations for additional slot empty icons, or null if not set
      */
-    public List<ResourceLocation> getAdditionalSlotEmptyIcons() {
+    public List<Identifier> getAdditionalSlotEmptyIcons() {
         return this.additionalSlotEmptyIcons;
     }
 

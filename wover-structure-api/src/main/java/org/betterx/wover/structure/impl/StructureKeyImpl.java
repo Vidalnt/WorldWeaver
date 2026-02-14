@@ -1,33 +1,31 @@
 package org.betterx.wover.structure.impl;
 
-import org.betterx.wover.structure.api.StructureKey;
-import org.betterx.wover.structure.api.StructureManager;
-import org.betterx.wover.structure.api.builders.BaseStructureBuilder;
-import org.betterx.wover.tag.api.TagManager;
-
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.structure.Structure;
-
+import org.betterx.wover.structure.api.StructureKey;
+import org.betterx.wover.structure.api.StructureManager;
+import org.betterx.wover.structure.api.builders.BaseStructureBuilder;
+import org.betterx.wover.tag.api.TagManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-
 public abstract class StructureKeyImpl<
-        S extends Structure,
-        T extends BaseStructureBuilder<S, T>,
-        R extends StructureKey<S, T, R>>
-        implements StructureKey<S, T, R> {
+    S extends Structure,
+    T extends BaseStructureBuilder<S, T>,
+    R extends StructureKey<S, T, R>
+> implements StructureKey<S, T, R> {
+
     /**
      * The key for the {@link Structure} you can use to reference it.
      */
@@ -40,14 +38,15 @@ public abstract class StructureKeyImpl<
     @NotNull
     private GenerationStep.Decoration decoration;
 
-
     @Override
     public final ResourceKey<Structure> key() {
         return this.key;
     }
 
     @Nullable
-    public Holder<Structure> getHolder(@Nullable HolderGetter<Structure> getter) {
+    public Holder<Structure> getHolder(
+        @Nullable HolderGetter<Structure> getter
+    ) {
         return StructureManagerImpl.getHolder(getter, key);
     }
 
@@ -55,7 +54,6 @@ public abstract class StructureKeyImpl<
     public Holder<Structure> getHolder(@Nullable HolderLookup.Provider lookup) {
         return StructureManagerImpl.getHolder(lookup, key);
     }
-
 
     @Nullable
     public Holder<Structure> getHolder(@NotNull BootstrapContext<?> context) {
@@ -73,7 +71,6 @@ public abstract class StructureKeyImpl<
         return (R) this;
     }
 
-
     @Override
     @NotNull
     public TagKey<Biome> biomeTag() {
@@ -84,12 +81,10 @@ public abstract class StructureKeyImpl<
         return biomeTag;
     }
 
-
     @Override
     public GenerationStep.@NotNull Decoration step() {
         return decoration;
     }
-
 
     @Override
     public R step(GenerationStep.Decoration decoration) {
@@ -100,14 +95,13 @@ public abstract class StructureKeyImpl<
     /**
      * For internal use only. Use {@link StructureManager} instead.
      * <p>
-     * Creates a new {@link StructureKey} with the given {@link ResourceLocation}.
+     * Creates a new {@link StructureKey} with the given {@link Identifier}.
      *
      * @param structureId The structure id
      */
     @ApiStatus.Internal
-    protected StructureKeyImpl(@NotNull ResourceLocation structureId) {
+    protected StructureKeyImpl(@NotNull Identifier structureId) {
         this.key = ResourceKey.create(Registries.STRUCTURE, structureId);
         this.decoration = GenerationStep.Decoration.SURFACE_STRUCTURES;
     }
-
 }

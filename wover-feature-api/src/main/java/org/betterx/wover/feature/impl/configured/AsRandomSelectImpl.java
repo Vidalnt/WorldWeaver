@@ -1,32 +1,37 @@
 package org.betterx.wover.feature.impl.configured;
 
-import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
-import org.betterx.wover.feature.api.configured.configurators.AsRandomSelect;
-import org.betterx.wover.feature.api.placed.PlacedFeatureKey;
-
+import java.util.LinkedList;
+import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.RandomSelectorFeature;
 import net.minecraft.world.level.levelgen.feature.WeightedPlacedFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.RandomFeatureConfiguration;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-
-import java.util.LinkedList;
-import java.util.List;
+import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
+import org.betterx.wover.feature.api.configured.configurators.AsRandomSelect;
+import org.betterx.wover.feature.api.placed.PlacedFeatureKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class AsRandomSelectImpl extends FeatureConfiguratorImpl<RandomFeatureConfiguration, RandomSelectorFeature> implements AsRandomSelect {
+public class AsRandomSelectImpl
+    extends FeatureConfiguratorImpl<
+        RandomFeatureConfiguration,
+        RandomSelectorFeature
+    >
+    implements AsRandomSelect
+{
+
     private final List<WeightedPlacedFeature> features = new LinkedList<>();
     private Holder<PlacedFeature> defaultFeature;
 
     AsRandomSelectImpl(
-            @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
-            @Nullable ResourceKey<ConfiguredFeature<?, ?>> key
+        @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
+        @Nullable ResourceKey<ConfiguredFeature<?, ?>> key
     ) {
         super(ctx, key);
     }
@@ -64,12 +69,15 @@ public class AsRandomSelectImpl extends FeatureConfiguratorImpl<RandomFeatureCon
     }
 
     public static class Key extends ConfiguredFeatureKey<AsRandomSelect> {
-        public Key(ResourceLocation id) {
+
+        public Key(Identifier id) {
             super(id);
         }
 
         @Override
-        public AsRandomSelect bootstrap(@NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx) {
+        public AsRandomSelect bootstrap(
+            @NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx
+        ) {
             return new AsRandomSelectImpl(ctx, key);
         }
     }

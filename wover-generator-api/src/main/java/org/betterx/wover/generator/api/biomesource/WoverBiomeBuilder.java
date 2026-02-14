@@ -1,5 +1,10 @@
 package org.betterx.wover.generator.api.biomesource;
 
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BiomeTags;
+import net.minecraft.world.level.biome.Biome;
 import org.betterx.wover.biome.api.BiomeKey;
 import org.betterx.wover.biome.api.builder.BiomeBootstrapContext;
 import org.betterx.wover.biome.api.builder.BiomeBuilder;
@@ -8,18 +13,10 @@ import org.betterx.wover.biome.api.data.BiomeGenerationDataContainer;
 import org.betterx.wover.generator.impl.biomesource.builder.WoverBiomeKeyImpl;
 import org.betterx.wover.generator.impl.biomesource.builder.WrappedWoverBiomeKeyImpl;
 import org.betterx.wover.tag.api.predefined.CommonBiomeTags;
-
-import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.BiomeTags;
-import net.minecraft.world.level.biome.Biome;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface WoverBiomeBuilder<B extends BiomeBuilder<B>> {
-
     B edge(ResourceKey<Biome> edge);
     B parent(ResourceKey<Biome> parent);
     B parent(BiomeKey<?> parent);
@@ -32,14 +29,18 @@ public interface WoverBiomeBuilder<B extends BiomeBuilder<B>> {
         return new WrappedWoverBiomeKeyImpl(key.location());
     }
 
-    static BiomeKey<WoverBiome> biomeKey(@NotNull ResourceLocation location) {
+    static BiomeKey<WoverBiome> biomeKey(@NotNull Identifier location) {
         return new WoverBiomeKeyImpl(location);
     }
 
-    abstract class Wrapped extends BiomeBuilder<Wrapped> implements WoverBiomeBuilder<Wrapped> {
+    abstract class Wrapped
+        extends BiomeBuilder<Wrapped>
+        implements WoverBiomeBuilder<Wrapped>
+    {
+
         protected Wrapped(
-                BiomeBootstrapContext context,
-                BiomeKey<WoverBiomeBuilder.Wrapped> key
+            BiomeBootstrapContext context,
+            BiomeKey<WoverBiomeBuilder.Wrapped> key
         ) {
             super(context, key);
         }
@@ -72,12 +73,22 @@ public interface WoverBiomeBuilder<B extends BiomeBuilder<B>> {
     }
 
     abstract class WoverBiome extends AbstractWoverBiomeBuilder<WoverBiome> {
-        protected WoverBiome(BiomeBootstrapContext context, BiomeKey<WoverBiome> key) {
+
+        protected WoverBiome(
+            BiomeBootstrapContext context,
+            BiomeKey<WoverBiome> key
+        ) {
             super(context, key);
         }
     }
 
-    abstract class AbstractWoverBiomeBuilder<T extends AbstractWoverBiomeBuilder<T>> extends BiomeBuilder.VanillaBuilder<T> implements WoverBiomeBuilder<T> {
+    abstract class AbstractWoverBiomeBuilder<
+            T extends AbstractWoverBiomeBuilder<T>
+        >
+        extends BiomeBuilder.VanillaBuilder<T>
+        implements WoverBiomeBuilder<T>
+    {
+
         protected float terrainHeight;
         protected float genChance;
         protected int edgeSize;
@@ -86,8 +97,8 @@ public interface WoverBiomeBuilder<B extends BiomeBuilder<B>> {
         protected @Nullable ResourceKey<Biome> parent;
 
         protected AbstractWoverBiomeBuilder(
-                BiomeBootstrapContext context,
-                BiomeKey<T> key
+            BiomeBootstrapContext context,
+            BiomeKey<T> key
         ) {
             super(context, key);
             this.genChance = 1.0f;
@@ -99,11 +110,21 @@ public interface WoverBiomeBuilder<B extends BiomeBuilder<B>> {
         @Override
         public void registerBiomeData(BootstrapContext<BiomeData> dataContext) {
             dataContext.register(
-                    key.dataKey,
-                    new WoverBiomeData(
-                            fogDensity, key.key, new BiomeGenerationDataContainer(parameters, intendedPlacement),
-                            terrainHeight, genChance, edgeSize, vertical, edge, parent
-                    )
+                key.dataKey,
+                new WoverBiomeData(
+                    fogDensity,
+                    key.key,
+                    new BiomeGenerationDataContainer(
+                        parameters,
+                        intendedPlacement
+                    ),
+                    terrainHeight,
+                    genChance,
+                    edgeSize,
+                    vertical,
+                    edge,
+                    parent
+                )
             );
         }
 

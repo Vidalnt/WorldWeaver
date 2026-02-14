@@ -12,7 +12,7 @@ import org.betterx.wover.tag.impl.TagManagerImpl;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.tags.TagAppender;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
@@ -163,16 +163,16 @@ public abstract class WoverTagProvider<T, P extends TagBootstrapContext<T>> impl
     }
 
     /**
-     * Tests whether the given {@link ResourceLocation} should be added to the tag.
+     * Tests whether the given {@link Identifier} should be added to the tag.
      * <p>
-     * The default implementation will return true if the {@link ResourceLocation}
+     * The default implementation will return true if the {@link Identifier}
      * is included in the {@link #modIDs} list, or if the {@link #modIDs} list is
      * {@code null}.
      *
-     * @param loc the {@link ResourceLocation} to test
-     * @return {@code true} if the {@link ResourceLocation} is allowed
+     * @param loc the {@link Identifier} to test
+     * @return {@code true} if the {@link Identifier} is allowed
      */
-    protected boolean shouldAdd(ResourceLocation loc) {
+    protected boolean shouldAdd(Identifier loc) {
         return modIDs == null || modIDs.contains(loc.getNamespace());
     }
 

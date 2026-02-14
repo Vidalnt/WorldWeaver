@@ -1,26 +1,24 @@
 package org.betterx.wover.structure.api.sets;
 
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructureSet;
 import org.betterx.wover.events.api.Event;
 import org.betterx.wover.events.api.types.OnBootstrapRegistry;
 import org.betterx.wover.structure.api.StructureKey;
 import org.betterx.wover.structure.api.builders.BaseStructureBuilder;
 import org.betterx.wover.structure.impl.sets.StructureSetManagerImpl;
-
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderGetter;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraft.world.level.levelgen.structure.StructureSet;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class StructureSetManager {
-    private StructureSetManager() {
-    }
+
+    private StructureSetManager() {}
 
     /**
      * The event that is fired when the Registry for a {@link StructureSet}
@@ -28,21 +26,20 @@ public class StructureSetManager {
      * in the data generator whenever possible (see WoverRegistryProvider)
      * for Details.
      */
-    public static final Event<OnBootstrapRegistry<StructureSet>> BOOTSTRAP_STRUCTURE_SETS =
-            StructureSetManagerImpl.BOOTSTRAP_STRUCTURE_SETS;
+    public static final Event<
+        OnBootstrapRegistry<StructureSet>
+    > BOOTSTRAP_STRUCTURE_SETS =
+        StructureSetManagerImpl.BOOTSTRAP_STRUCTURE_SETS;
 
     /**
-     * Creates a {@link StructureSetKey} for the given {@link ResourceLocation}.
+     * Creates a {@link StructureSetKey} for the given {@link Identifier}.
      *
      * @param location The location of the {@link StructureSet}
      * @return The {@link StructureSetKey}
      */
-    public static StructureSetKey createKey(
-            ResourceLocation location
-    ) {
+    public static StructureSetKey createKey(Identifier location) {
         return new StructureSetKey(location);
     }
-
 
     /**
      * Creates a {@link StructureSetKey} for the given {@link StructureKey}.
@@ -50,9 +47,7 @@ public class StructureSetManager {
      * @param structure The {@link StructureKey} to create the {@link StructureSetKey} for
      * @return The {@link StructureSetKey}
      */
-    public static StructureSetKey createKey(
-            StructureKey<?, ?, ?> structure
-    ) {
+    public static StructureSetKey createKey(StructureKey<?, ?, ?> structure) {
         return createKey(structure.key().location());
     }
 
@@ -71,12 +66,12 @@ public class StructureSetManager {
      * @return The {@link StructureSetBuilder} for the newly created set.
      */
     public static <
-            S extends Structure,
-            T extends BaseStructureBuilder<S, T>,
-            R extends StructureKey<S, T, R>
-            > StructureSetBuilder bootstrap(
-            R structure,
-            BootstrapContext<StructureSet> context
+        S extends Structure,
+        T extends BaseStructureBuilder<S, T>,
+        R extends StructureKey<S, T, R>
+    > StructureSetBuilder bootstrap(
+        R structure,
+        BootstrapContext<StructureSet> context
     ) {
         return createKey(structure).bootstrap(context).addStructure(structure);
     }
@@ -92,8 +87,8 @@ public class StructureSetManager {
      */
     @Nullable
     public static Holder<StructureSet> getHolder(
-            @Nullable HolderGetter<StructureSet> getter,
-            @NotNull ResourceKey<StructureSet> key
+        @Nullable HolderGetter<StructureSet> getter,
+        @NotNull ResourceKey<StructureSet> key
     ) {
         return StructureSetManagerImpl.getHolder(getter, key);
     }
@@ -110,9 +105,12 @@ public class StructureSetManager {
      */
     @Nullable
     public static Holder<StructureSet> getHolder(
-            @Nullable BootstrapContext<?> context,
-            @NotNull ResourceKey<StructureSet> key
+        @Nullable BootstrapContext<?> context,
+        @NotNull ResourceKey<StructureSet> key
     ) {
-        return StructureSetManagerImpl.getHolder(context.lookup(Registries.STRUCTURE_SET), key);
+        return StructureSetManagerImpl.getHolder(
+            context.lookup(Registries.STRUCTURE_SET),
+            key
+        );
     }
 }

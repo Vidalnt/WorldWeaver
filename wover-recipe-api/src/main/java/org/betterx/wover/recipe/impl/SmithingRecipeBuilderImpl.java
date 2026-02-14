@@ -1,26 +1,28 @@
 package org.betterx.wover.recipe.impl;
 
-import org.betterx.wover.recipe.api.RecipeBuilder;
-import org.betterx.wover.recipe.api.SmithingRecipeBuilder;
-
 import net.minecraft.data.recipes.SmithingTransformRecipeBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SmithingTemplateItem;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
-
+import org.betterx.wover.recipe.api.RecipeBuilder;
+import org.betterx.wover.recipe.api.SmithingRecipeBuilder;
 import org.jetbrains.annotations.NotNull;
 
-public class SmithingRecipeBuilderImpl extends BaseRecipeBuilderImpl<SmithingRecipeBuilder> implements SmithingRecipeBuilder {
+public class SmithingRecipeBuilderImpl
+    extends BaseRecipeBuilderImpl<SmithingRecipeBuilder>
+    implements SmithingRecipeBuilder
+{
+
     protected CraftingRecipeBuilderImpl.IngredientFactory template;
     protected CraftingRecipeBuilderImpl.IngredientFactory base;
     protected CraftingRecipeBuilderImpl.IngredientFactory addon;
 
     public SmithingRecipeBuilderImpl(
-            @NotNull ResourceLocation id,
-            @NotNull ItemLike output
+        @NotNull Identifier id,
+        @NotNull ItemLike output
     ) {
         super(id, output);
     }
@@ -88,16 +90,20 @@ public class SmithingRecipeBuilderImpl extends BaseRecipeBuilderImpl<SmithingRec
 
     @Override
     public void build(RecipeBuilder.Context context) {
-        final SmithingTransformRecipeBuilder builder = SmithingTransformRecipeBuilder.smithing(
+        final SmithingTransformRecipeBuilder builder =
+            SmithingTransformRecipeBuilder.smithing(
                 template.createIngredient(context),
                 base.createIngredient(context),
                 addon.createIngredient(context),
                 category,
                 output.getItem()
-        );
+            );
 
         for (var item : unlocks.entrySet()) {
-            builder.unlocks(item.getKey(), item.getValue().createCriterion(context));
+            builder.unlocks(
+                item.getKey(),
+                item.getValue().createCriterion(context)
+            );
         }
         builder.save(context.recipeOutput(), this.key());
     }

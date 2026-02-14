@@ -1,5 +1,7 @@
-archivesBaseName = "wover-sets-api"
 
+base {
+    archivesName = "wover-sets-api"
+}
 ext {
     baseNamespace = "sets"
     baseClass = "LibWoverSets"

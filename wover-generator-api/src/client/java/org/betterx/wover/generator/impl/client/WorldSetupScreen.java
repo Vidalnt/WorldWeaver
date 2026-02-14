@@ -33,7 +33,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
@@ -157,7 +157,7 @@ public class WorldSetupScreen extends LayoutScreen implements BiomeSourceConfigP
         return languageKey(key.unwrapKey().orElseThrow().location());
     }
 
-    private String languageKey(ResourceLocation key) {
+    private String languageKey(Identifier key) {
         return "generator." + key.getNamespace() + "." + key.getPath();
     }
 
@@ -188,7 +188,7 @@ public class WorldSetupScreen extends LayoutScreen implements BiomeSourceConfigP
                                               .compareTo(language.getOrDefault(languageKey(b))))
                     .forEach(preset -> {
                         final var info = WorldPresetInfoRegistry.getFor(preset);
-                        final ResourceLocation presetKey = preset.unwrapKey().orElseThrow().location();
+                        final Identifier presetKey = preset.unwrapKey().orElseThrow().location();
                         final Optional<LevelStem> targetDimension = preset.value()
                                                                           .createWorldDimensions()
                                                                           .get(forDimension);

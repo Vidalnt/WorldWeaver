@@ -38,6 +38,8 @@ allprojects { projIt ->
     java {
         // Must be added before the split source sets are setup.
         withSourcesJar()
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     sourceSets {
@@ -362,7 +364,9 @@ javadoc {
 }
 
 jar {
-    from "LICENSE"
+    from("LICENSE") {
+        rename { "${it}_${project.base.archivesName.get()}" }
+    }
 }
 
 configurations {

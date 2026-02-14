@@ -1,34 +1,36 @@
 package org.betterx.wover.biome.api.data;
 
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.biome.Biome;
 import org.betterx.wover.biome.impl.data.BiomeDataRegistryImpl;
 import org.betterx.wover.core.api.registry.DatapackRegistryBuilder;
 import org.betterx.wover.entrypoint.LibWoverSurface;
 import org.betterx.wover.events.api.Event;
 import org.betterx.wover.events.api.types.OnBootstrapRegistry;
 
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.biome.Biome;
-
 public class BiomeDataRegistry {
-    private BiomeDataRegistry() {
 
-    }
+    private BiomeDataRegistry() {}
 
     /**
      * This event is fired, after the surface rule registry was loaded. At this point, the
      * registry has gathered all surface rules from datapacks and is not yet frozen
      */
-    public static final Event<OnBootstrapRegistry<BiomeData>> BOOTSTRAP_BIOME_DATA_REGISTRY
-            = BiomeDataRegistryImpl.BOOTSTRAP_BIOME_DATA_REGISTRY;
+    public static final Event<
+        OnBootstrapRegistry<BiomeData>
+    > BOOTSTRAP_BIOME_DATA_REGISTRY =
+        BiomeDataRegistryImpl.BOOTSTRAP_BIOME_DATA_REGISTRY;
 
     /**
      * The Key of the Registry. ({@code wover/worldgen/biome_data})
      */
     public static final ResourceKey<Registry<BiomeData>> BIOME_DATA_REGISTRY =
-            DatapackRegistryBuilder.createRegistryKey(LibWoverSurface.C.id("wover/worldgen/biome_data"));
+        DatapackRegistryBuilder.createRegistryKey(
+            LibWoverSurface.C.id("wover/worldgen/biome_data")
+        );
 
     /**
      * Creates a ResourceKey for  {@link BiomeData}.
@@ -36,9 +38,7 @@ public class BiomeDataRegistry {
      * @param dataID The ID of the BiomeData
      * @return The ResourceKey
      */
-    public static ResourceKey<BiomeData> createKey(
-            ResourceLocation dataID
-    ) {
+    public static ResourceKey<BiomeData> createKey(Identifier dataID) {
         return BiomeDataRegistryImpl.createKey(dataID);
     }
 
@@ -49,11 +49,10 @@ public class BiomeDataRegistry {
      * @return The ResourceKey
      */
     public static ResourceKey<BiomeData> createKey(
-            ResourceKey<Biome> biomeKey
+        ResourceKey<Biome> biomeKey
     ) {
         return BiomeDataRegistryImpl.createKey(biomeKey.location());
     }
-
 
     /**
      * Creates a ResourceKey for the Biome that will use the  {@link BiomeData}.
@@ -62,7 +61,7 @@ public class BiomeDataRegistry {
      * @return The ResourceKey of the matching Biome
      */
     public static ResourceKey<Biome> createBiomeKey(
-            ResourceKey<BiomeData> biomeDataKey
+        ResourceKey<BiomeData> biomeDataKey
     ) {
         return ResourceKey.create(Registries.BIOME, biomeDataKey.location());
     }

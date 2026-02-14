@@ -1,25 +1,23 @@
 package org.betterx.wover.structure.api.processors;
 
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 import org.betterx.wover.events.api.Event;
 import org.betterx.wover.events.api.types.OnBootstrapRegistry;
 import org.betterx.wover.structure.api.pools.StructurePoolKey;
 import org.betterx.wover.structure.api.sets.StructureSetKey;
 import org.betterx.wover.structure.impl.processors.StructureProcessorManagerImpl;
-
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderGetter;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class StructureProcessorManager {
-    private StructureProcessorManager() {
-    }
+
+    private StructureProcessorManager() {}
 
     /**
      * The event that is fired when the Registry for a {@link StructureProcessorList}
@@ -27,18 +25,18 @@ public class StructureProcessorManager {
      * in the data generator whenever possible (see WoverRegistryProvider)
      * for Details.
      */
-    public static final Event<OnBootstrapRegistry<StructureProcessorList>> BOOTSTRAP_STRUCTURE_PROCESSORS =
-            StructureProcessorManagerImpl.BOOTSTRAP_STRUCTURE_PROCESSORS;
+    public static final Event<
+        OnBootstrapRegistry<StructureProcessorList>
+    > BOOTSTRAP_STRUCTURE_PROCESSORS =
+        StructureProcessorManagerImpl.BOOTSTRAP_STRUCTURE_PROCESSORS;
 
     /**
-     * Creates a {@link StructurePoolKey} for the given {@link ResourceLocation}.
+     * Creates a {@link StructurePoolKey} for the given {@link Identifier}.
      *
      * @param location The location of the {@link StructureProcessorList}
      * @return The {@link StructureSetKey}
      */
-    public static StructureProcessorKey createKey(
-            ResourceLocation location
-    ) {
+    public static StructureProcessorKey createKey(Identifier location) {
         return new StructureProcessorKey(location);
     }
 
@@ -53,8 +51,8 @@ public class StructureProcessorManager {
      */
     @Nullable
     public static Holder<StructureProcessorList> getHolder(
-            @Nullable HolderGetter<StructureProcessorList> getter,
-            @NotNull ResourceKey<StructureProcessorList> key
+        @Nullable HolderGetter<StructureProcessorList> getter,
+        @NotNull ResourceKey<StructureProcessorList> key
     ) {
         return StructureProcessorManagerImpl.getHolder(getter, key);
     }
@@ -71,9 +69,12 @@ public class StructureProcessorManager {
      */
     @Nullable
     public static Holder<StructureProcessorList> getHolder(
-            @Nullable BootstrapContext<?> context,
-            @NotNull ResourceKey<StructureProcessorList> key
+        @Nullable BootstrapContext<?> context,
+        @NotNull ResourceKey<StructureProcessorList> key
     ) {
-        return StructureProcessorManagerImpl.getHolder(context.lookup(Registries.PROCESSOR_LIST), key);
+        return StructureProcessorManagerImpl.getHolder(
+            context.lookup(Registries.PROCESSOR_LIST),
+            key
+        );
     }
 }

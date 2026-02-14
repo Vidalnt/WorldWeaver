@@ -1,31 +1,36 @@
 package org.betterx.wover.feature.impl.configured;
 
-import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
-import org.betterx.wover.feature.api.configured.configurators.RandomPatch;
-import org.betterx.wover.feature.api.placed.BasePlacedFeatureKey;
-
 import net.minecraft.core.Holder;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.RandomPatchFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.RandomPatchConfiguration;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-
+import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
+import org.betterx.wover.feature.api.configured.configurators.RandomPatch;
+import org.betterx.wover.feature.api.placed.BasePlacedFeatureKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class RandomPatchImpl extends FeatureConfiguratorImpl<RandomPatchConfiguration, RandomPatchFeature> implements RandomPatch {
+public class RandomPatchImpl
+    extends FeatureConfiguratorImpl<
+        RandomPatchConfiguration,
+        RandomPatchFeature
+    >
+    implements RandomPatch
+{
+
     private Holder<PlacedFeature> featureToPlace;
     private int tries = 96;
     private int xzSpread = 7;
     private int ySpread = 3;
 
     RandomPatchImpl(
-            @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
-            @Nullable ResourceKey<ConfiguredFeature<?, ?>> featureKey
+        @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
+        @Nullable ResourceKey<ConfiguredFeature<?, ?>> featureKey
     ) {
         super(ctx, featureKey);
     }
@@ -62,10 +67,16 @@ public class RandomPatchImpl extends FeatureConfiguratorImpl<RandomPatchConfigur
     }
 
     @Override
-    public <K extends BasePlacedFeatureKey<K>> RandomPatch featureToPlace(BasePlacedFeatureKey<K> featureToPlace) {
-        return this.featureToPlace(featureToPlace.getHolder(bootstrapContext != null
-                ? bootstrapContext
-                : getTransitiveBootstrapContext()));
+    public <K extends BasePlacedFeatureKey<K>> RandomPatch featureToPlace(
+        BasePlacedFeatureKey<K> featureToPlace
+    ) {
+        return this.featureToPlace(
+            featureToPlace.getHolder(
+                bootstrapContext != null
+                    ? bootstrapContext
+                    : getTransitiveBootstrapContext()
+            )
+        );
     }
 
     @Override
@@ -84,16 +95,24 @@ public class RandomPatchImpl extends FeatureConfiguratorImpl<RandomPatchConfigur
         if (featureToPlace == null) {
             throwStateError("No PlacedFeature was provided.");
         }
-        return new RandomPatchConfiguration(tries, xzSpread, ySpread, featureToPlace);
+        return new RandomPatchConfiguration(
+            tries,
+            xzSpread,
+            ySpread,
+            featureToPlace
+        );
     }
 
     public static class Key extends ConfiguredFeatureKey<RandomPatch> {
-        public Key(ResourceLocation id) {
+
+        public Key(Identifier id) {
             super(id);
         }
 
         @Override
-        public RandomPatch bootstrap(@NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx) {
+        public RandomPatch bootstrap(
+            @NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx
+        ) {
             return new RandomPatchImpl(ctx, key);
         }
     }

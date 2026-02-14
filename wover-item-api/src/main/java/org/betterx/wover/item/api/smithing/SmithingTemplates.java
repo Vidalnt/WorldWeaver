@@ -1,19 +1,16 @@
 package org.betterx.wover.item.api.smithing;
 
-import org.betterx.wover.core.api.ModCore;
-
+import java.util.List;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SmithingTemplateItem;
-
+import org.betterx.wover.core.api.ModCore;
 import org.spongepowered.include.com.google.common.collect.ImmutableList;
-
-import java.util.List;
 
 /**
  * Utility class for creating custom smithing templates with predefined slot configurations.
@@ -50,6 +47,7 @@ import java.util.List;
  * @see ModCore
  */
 public class SmithingTemplates {
+
     /**
      * Chat formatting used for template titles
      */
@@ -63,91 +61,96 @@ public class SmithingTemplates {
     /**
      * Empty slot icon for helmet armor pieces
      */
-    public static final ResourceLocation EMPTY_SLOT_HELMET = ResourceLocation.withDefaultNamespace(
-            "item/empty_armor_slot_helmet");
+    public static final Identifier EMPTY_SLOT_HELMET =
+        Identifier.withDefaultNamespace("item/empty_armor_slot_helmet");
     /**
      * Empty slot icon for chestplate armor pieces
      */
-    public static final ResourceLocation EMPTY_SLOT_CHESTPLATE = ResourceLocation.withDefaultNamespace(
-            "item/empty_armor_slot_chestplate");
+    public static final Identifier EMPTY_SLOT_CHESTPLATE =
+        Identifier.withDefaultNamespace("item/empty_armor_slot_chestplate");
     /**
      * Empty slot icon for leggings armor pieces
      */
-    public static final ResourceLocation EMPTY_SLOT_LEGGINGS = ResourceLocation.withDefaultNamespace(
-            "item/empty_armor_slot_leggings");
+    public static final Identifier EMPTY_SLOT_LEGGINGS =
+        Identifier.withDefaultNamespace("item/empty_armor_slot_leggings");
     /**
      * Empty slot icon for boots armor pieces
      */
-    public static final ResourceLocation EMPTY_SLOT_BOOTS = ResourceLocation.withDefaultNamespace(
-            "item/empty_armor_slot_boots");
+    public static final Identifier EMPTY_SLOT_BOOTS =
+        Identifier.withDefaultNamespace("item/empty_armor_slot_boots");
 
     // Tool slot empty icons
     /**
      * Empty slot icon for hoe tools
      */
-    public static final ResourceLocation EMPTY_SLOT_HOE = ResourceLocation.withDefaultNamespace("item/empty_slot_hoe");
+    public static final Identifier EMPTY_SLOT_HOE =
+        Identifier.withDefaultNamespace("item/empty_slot_hoe");
     /**
      * Empty slot icon for axe tools
      */
-    public static final ResourceLocation EMPTY_SLOT_AXE = ResourceLocation.withDefaultNamespace("item/empty_slot_axe");
+    public static final Identifier EMPTY_SLOT_AXE =
+        Identifier.withDefaultNamespace("item/empty_slot_axe");
     /**
      * Empty slot icon for sword weapons
      */
-    public static final ResourceLocation EMPTY_SLOT_SWORD = ResourceLocation.withDefaultNamespace(
-            "item/empty_slot_sword");
+    public static final Identifier EMPTY_SLOT_SWORD =
+        Identifier.withDefaultNamespace("item/empty_slot_sword");
     /**
      * Empty slot icon for shovel tools
      */
-    public static final ResourceLocation EMPTY_SLOT_SHOVEL = ResourceLocation.withDefaultNamespace(
-            "item/empty_slot_shovel");
+    public static final Identifier EMPTY_SLOT_SHOVEL =
+        Identifier.withDefaultNamespace("item/empty_slot_shovel");
     /**
      * Empty slot icon for pickaxe tools
      */
-    public static final ResourceLocation EMPTY_SLOT_PICKAXE = ResourceLocation.withDefaultNamespace(
-            "item/empty_slot_pickaxe");
+    public static final Identifier EMPTY_SLOT_PICKAXE =
+        Identifier.withDefaultNamespace("item/empty_slot_pickaxe");
 
     // Material slot empty icons
     /**
      * Empty slot icon for ingot materials
      */
-    public static final ResourceLocation EMPTY_SLOT_INGOT = ResourceLocation.withDefaultNamespace(
-            "item/empty_slot_ingot");
+    public static final Identifier EMPTY_SLOT_INGOT =
+        Identifier.withDefaultNamespace("item/empty_slot_ingot");
     /**
      * Empty slot icon for redstone dust materials
      */
-    public static final ResourceLocation EMPTY_SLOT_REDSTONE_DUST = ResourceLocation.withDefaultNamespace(
-            "item/empty_slot_redstone_dust");
+    public static final Identifier EMPTY_SLOT_REDSTONE_DUST =
+        Identifier.withDefaultNamespace("item/empty_slot_redstone_dust");
     /**
      * Empty slot icon for diamond materials
      */
-    public static final ResourceLocation EMPTY_SLOT_DIAMOND = ResourceLocation.withDefaultNamespace(
-            "item/empty_slot_diamond");
+    public static final Identifier EMPTY_SLOT_DIAMOND =
+        Identifier.withDefaultNamespace("item/empty_slot_diamond");
 
     /**
      * Predefined collection of all tool slot icons
      */
-    public static final List<ResourceLocation> TOOLS = List.of(
-            EMPTY_SLOT_SWORD,
-            EMPTY_SLOT_PICKAXE,
-            EMPTY_SLOT_AXE,
-            EMPTY_SLOT_HOE,
-            EMPTY_SLOT_SHOVEL
+    public static final List<Identifier> TOOLS = List.of(
+        EMPTY_SLOT_SWORD,
+        EMPTY_SLOT_PICKAXE,
+        EMPTY_SLOT_AXE,
+        EMPTY_SLOT_HOE,
+        EMPTY_SLOT_SHOVEL
     );
 
     /**
      * Predefined collection of all armor slot icons
      */
-    public static final List<ResourceLocation> ARMOR = List.of(
-            EMPTY_SLOT_HELMET,
-            EMPTY_SLOT_CHESTPLATE,
-            EMPTY_SLOT_LEGGINGS,
-            EMPTY_SLOT_BOOTS
+    public static final List<Identifier> ARMOR = List.of(
+        EMPTY_SLOT_HELMET,
+        EMPTY_SLOT_CHESTPLATE,
+        EMPTY_SLOT_LEGGINGS,
+        EMPTY_SLOT_BOOTS
     );
 
     /**
      * Predefined collection combining armor and tool slot icons
      */
-    public static final List<ResourceLocation> ARMOR_AND_TOOLS = combine(ARMOR, TOOLS);
+    public static final List<Identifier> ARMOR_AND_TOOLS = combine(
+        ARMOR,
+        TOOLS
+    );
 
     /**
      * Combines multiple resource location lists into a single immutable list.
@@ -155,8 +158,9 @@ public class SmithingTemplates {
      * @param sourceLists The lists to combine
      * @return A new immutable list containing all elements from the source lists
      */
-    public static List<ResourceLocation> combine(List<ResourceLocation>... sourceLists) {
-        final ImmutableList.Builder<ResourceLocation> builder = ImmutableList.builder();
+    public static List<Identifier> combine(List<Identifier>... sourceLists) {
+        final ImmutableList.Builder<Identifier> builder =
+            ImmutableList.builder();
         for (var sourceList : sourceLists) {
             builder.addAll(sourceList);
         }
@@ -181,10 +185,11 @@ public class SmithingTemplates {
      * key generation and validation of required properties.
      */
     public static class Builder {
+
         private final ModCore C;
         private final String path;
-        private List<ResourceLocation> baseSlotEmptyIcons;
-        private List<ResourceLocation> additionalSlotEmptyIcons;
+        private List<Identifier> baseSlotEmptyIcons;
+        private List<Identifier> additionalSlotEmptyIcons;
         private Item.Properties properties;
 
         private Builder(ModCore modCore, String templatePath) {
@@ -202,7 +207,7 @@ public class SmithingTemplates {
          * @param baseSlotIcons List of resource locations for base slot empty icons
          * @return This builder instance for chaining
          */
-        public Builder setBaseSlotEmptyIcons(List<ResourceLocation> baseSlotIcons) {
+        public Builder setBaseSlotEmptyIcons(List<Identifier> baseSlotIcons) {
             this.baseSlotEmptyIcons = baseSlotIcons;
             return this;
         }
@@ -216,7 +221,9 @@ public class SmithingTemplates {
          * @param additionalSlotIcons List of resource locations for additional slot empty icons
          * @return This builder instance for chaining
          */
-        public Builder setAdditionalSlotEmptyIcons(List<ResourceLocation> additionalSlotIcons) {
+        public Builder setAdditionalSlotEmptyIcons(
+            List<Identifier> additionalSlotIcons
+        ) {
             this.additionalSlotEmptyIcons = additionalSlotIcons;
             return this;
         }
@@ -255,37 +262,62 @@ public class SmithingTemplates {
          */
         public SmithingTemplateItem build() {
             if (baseSlotEmptyIcons == null || baseSlotEmptyIcons.isEmpty()) {
-                throw new IllegalStateException("Base slot empty icons must contain at least one icon");
+                throw new IllegalStateException(
+                    "Base slot empty icons must contain at least one icon"
+                );
             }
-            if (additionalSlotEmptyIcons == null || additionalSlotEmptyIcons.isEmpty()) {
-                throw new IllegalStateException("Additional slot empty icons must contain at least one icon");
+            if (
+                additionalSlotEmptyIcons == null ||
+                additionalSlotEmptyIcons.isEmpty()
+            ) {
+                throw new IllegalStateException(
+                    "Additional slot empty icons must contain at least one icon"
+                );
             }
 
             if (this.properties == null) {
                 this.properties = new Item.Properties();
             }
-            this.properties = properties.setId(ResourceKey.create(BuiltInRegistries.ITEM.key(), C.mk(path)));
+            this.properties = properties.setId(
+                ResourceKey.create(BuiltInRegistries.ITEM.key(), C.mk(path))
+            );
 
             return new SmithingTemplateItem(
-                    Component.translatable(Util.makeDescriptionId(
-                            "item",
-                            C.mk("smithing_template." + path + ".applies_to")
-                    )).withStyle(DESCRIPTION_FORMAT),
-                    Component.translatable(Util.makeDescriptionId(
-                            "item",
-                            C.mk("smithing_template." + path + ".ingredients")
-                    )).withStyle(DESCRIPTION_FORMAT),
-                    Component.translatable(Util.makeDescriptionId(
-                            "item",
-                            C.mk("smithing_template." + path + ".base_slot_description")
-                    )),
-                    Component.translatable(Util.makeDescriptionId(
-                            "item",
-                            C.mk("smithing_template." + path + ".additions_slot_description")
-                    )),
-                    baseSlotEmptyIcons,
-                    additionalSlotEmptyIcons,
-                    this.properties
+                Component.translatable(
+                    Util.makeDescriptionId(
+                        "item",
+                        C.mk("smithing_template." + path + ".applies_to")
+                    )
+                ).withStyle(DESCRIPTION_FORMAT),
+                Component.translatable(
+                    Util.makeDescriptionId(
+                        "item",
+                        C.mk("smithing_template." + path + ".ingredients")
+                    )
+                ).withStyle(DESCRIPTION_FORMAT),
+                Component.translatable(
+                    Util.makeDescriptionId(
+                        "item",
+                        C.mk(
+                            "smithing_template." +
+                                path +
+                                ".base_slot_description"
+                        )
+                    )
+                ),
+                Component.translatable(
+                    Util.makeDescriptionId(
+                        "item",
+                        C.mk(
+                            "smithing_template." +
+                                path +
+                                ".additions_slot_description"
+                        )
+                    )
+                ),
+                baseSlotEmptyIcons,
+                additionalSlotEmptyIcons,
+                this.properties
             );
         }
     }

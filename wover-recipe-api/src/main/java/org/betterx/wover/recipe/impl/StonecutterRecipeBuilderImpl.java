@@ -5,7 +5,7 @@ import org.betterx.wover.recipe.api.RecipeMaterial;
 import org.betterx.wover.recipe.api.StonecutterRecipeBuilder;
 
 import net.minecraft.data.recipes.SingleItemRecipeBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -18,7 +18,7 @@ public class StonecutterRecipeBuilderImpl extends BaseRecipeBuilderImpl<Stonecut
     CraftingRecipeBuilderImpl.IngredientFactory input;
 
     public StonecutterRecipeBuilderImpl(
-            @NotNull ResourceLocation id,
+            @NotNull Identifier id,
             @NotNull ItemLike output
     ) {
         super(id, output);

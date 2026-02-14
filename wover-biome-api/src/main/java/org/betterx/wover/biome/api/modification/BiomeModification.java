@@ -18,7 +18,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.EntityType;
@@ -117,7 +117,7 @@ public interface BiomeModification {
      * @param location The location of the modification.
      * @return The builder.
      */
-    static Builder build(@NotNull BootstrapContext<BiomeModification> context, @NotNull ResourceLocation location) {
+    static Builder build(@NotNull BootstrapContext<BiomeModification> context, @NotNull Identifier location) {
         return new Builder(
                 context,
                 ResourceKey.create(BiomeModificationRegistry.BIOME_MODIFICATION_REGISTRY, location)

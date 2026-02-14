@@ -1,25 +1,23 @@
 package org.betterx.wover.item.api;
 
-import org.betterx.wover.core.api.ModCore;
-import org.betterx.wover.item.api.smithing.SmithingTemplates;
-import org.betterx.wover.item.impl.ItemRegistryImpl;
-import org.betterx.wover.tag.api.event.context.ItemTagBootstrapContext;
-
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.*;
-import net.minecraft.world.level.block.DispenserBlock;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.block.DispenserBlock;
+import org.betterx.wover.core.api.ModCore;
+import org.betterx.wover.item.api.smithing.SmithingTemplates;
+import org.betterx.wover.item.impl.ItemRegistryImpl;
+import org.betterx.wover.tag.api.event.context.ItemTagBootstrapContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,6 +60,7 @@ import org.jetbrains.annotations.Nullable;
  * @since 21.6.0
  */
 public abstract class ItemRegistry {
+
     /**
      * The mod core this registry belongs to
      */
@@ -152,8 +151,10 @@ public abstract class ItemRegistry {
      * @param itemKey The key for the item
      * @return A ResourceKey for the item in this mod's namespace
      */
-    public @NotNull ResourceKey<EntityType<?>> entityKey(@NotNull ResourceKey<Item> itemKey) {
-        return ResourceKey.create(Registries.ENTITY_TYPE, itemKey.location());
+    public @NotNull ResourceKey<EntityType<?>> entityKey(
+        @NotNull ResourceKey<Item> itemKey
+    ) {
+        return ResourceKey.create(Registries.ENTITY_TYPE, itemKey.identifier());
     }
 
     /**
@@ -162,7 +163,9 @@ public abstract class ItemRegistry {
      * @param itemName The name identifier for the item
      * @return A ResourceKey for the item in this mod's namespace
      */
-    public @NotNull ResourceKey<EntityType<?>> entityKey(@NotNull String itemName) {
+    public @NotNull ResourceKey<EntityType<?>> entityKey(
+        @NotNull String itemName
+    ) {
         return ResourceKey.create(Registries.ENTITY_TYPE, C.mk(itemName));
     }
 
@@ -199,8 +202,8 @@ public abstract class ItemRegistry {
      * @return A new DefaultItemDefinition instance for method chaining
      */
     public <I extends Item> DefaultItemDefinition<I> defineDefaultItem(
-            String itemName,
-            DefaultItemDefinition.ItemFactory<I> itemFactory
+        String itemName,
+        DefaultItemDefinition.ItemFactory<I> itemFactory
     ) {
         return new DefaultItemDefinition<>(this, itemName, itemFactory);
     }
@@ -216,10 +219,12 @@ public abstract class ItemRegistry {
      * @return A new DefaultItemDefinition instance for method chaining
      */
     public <I extends Item> DefaultItemDefinition<I> defineDefaultItemWithProps(
-            String itemName,
-            Function<Item.Properties, I> itemFactory
+        String itemName,
+        Function<Item.Properties, I> itemFactory
     ) {
-        return new DefaultItemDefinition<>(this, itemName, (def) -> itemFactory.apply(def.getProperties()));
+        return new DefaultItemDefinition<>(this, itemName, def ->
+            itemFactory.apply(def.getProperties())
+        );
     }
 
     /**
@@ -230,13 +235,8 @@ public abstract class ItemRegistry {
      * @param toolName The name identifier for the tool item
      * @return A new ToolItemDefinition instance for method chaining
      */
-    public ToolItemDefinition<Item> defineToolItem(
-            String toolName
-    ) {
-        return defineToolItem(
-                toolName,
-                (def) -> new Item(def.getProperties())
-        );
+    public ToolItemDefinition<Item> defineToolItem(String toolName) {
+        return defineToolItem(toolName, def -> new Item(def.getProperties()));
     }
 
     /**
@@ -250,8 +250,8 @@ public abstract class ItemRegistry {
      * @return A new ToolItemDefinition instance for method chaining
      */
     public <I extends Item> ToolItemDefinition<I> defineToolItem(
-            String toolName,
-            ToolItemDefinition.ItemFactory<I> itemFactory
+        String toolName,
+        ToolItemDefinition.ItemFactory<I> itemFactory
     ) {
         return new ToolItemDefinition<>(this, toolName, itemFactory);
     }
@@ -267,8 +267,8 @@ public abstract class ItemRegistry {
      * @return A new ArmorItemDefinition instance for method chaining
      */
     public <I extends Item> ArmorItemDefinition<I> defineArmorItem(
-            String armorName,
-            ArmorItemDefinition.ItemFactory<I> itemFactory
+        String armorName,
+        ArmorItemDefinition.ItemFactory<I> itemFactory
     ) {
         return new ArmorItemDefinition<>(this, armorName, itemFactory);
     }
@@ -281,13 +281,8 @@ public abstract class ItemRegistry {
      * @param armorName The name identifier for the armor item
      * @return A new ArmorItemDefinition instance for method chaining
      */
-    public ArmorItemDefinition<Item> defineArmorItem(
-            String armorName
-    ) {
-        return defineArmorItem(
-                armorName,
-                (def) -> new Item(def.getProperties())
-        );
+    public ArmorItemDefinition<Item> defineArmorItem(String armorName) {
+        return defineArmorItem(armorName, def -> new Item(def.getProperties()));
     }
 
     /**
@@ -301,8 +296,8 @@ public abstract class ItemRegistry {
      * @return A new FoodItemDefinition instance for method chaining
      */
     public <I extends Item> FoodItemDefinition<I> defineFoodItem(
-            String foodName,
-            FoodItemDefinition.ItemFactory<I> itemFactory
+        String foodName,
+        FoodItemDefinition.ItemFactory<I> itemFactory
     ) {
         return new FoodItemDefinition<>(this, foodName, itemFactory);
     }
@@ -315,13 +310,8 @@ public abstract class ItemRegistry {
      * @param foodName The name identifier for the food item
      * @return A new FoodItemDefinition instance for method chaining
      */
-    public FoodItemDefinition<Item> defineFoodItem(
-            String foodName
-    ) {
-        return defineFoodItem(
-                foodName,
-                (def) -> new Item(def.getProperties())
-        );
+    public FoodItemDefinition<Item> defineFoodItem(String foodName) {
+        return defineFoodItem(foodName, def -> new Item(def.getProperties()));
     }
 
     /**
@@ -335,8 +325,8 @@ public abstract class ItemRegistry {
      * @return A new DrinkItemDefinition instance for method chaining
      */
     public <I extends Item> DrinkItemDefinition<I> defineDrinkItem(
-            String drinkName,
-            FoodItemDefinition.ItemFactory<I> itemFactory
+        String drinkName,
+        FoodItemDefinition.ItemFactory<I> itemFactory
     ) {
         return new DrinkItemDefinition<>(this, drinkName, itemFactory);
     }
@@ -349,13 +339,8 @@ public abstract class ItemRegistry {
      * @param drinkName The name identifier for the drink item
      * @return A new DrinkItemDefinition instance for method chaining
      */
-    public DrinkItemDefinition<Item> defineDrinkItem(
-            String drinkName
-    ) {
-        return defineDrinkItem(
-                drinkName,
-                (def) -> new Item(def.getProperties())
-        );
+    public DrinkItemDefinition<Item> defineDrinkItem(String drinkName) {
+        return defineDrinkItem(drinkName, def -> new Item(def.getProperties()));
     }
 
     /**
@@ -369,8 +354,8 @@ public abstract class ItemRegistry {
      * @return A new SpawnEggDefinition instance for method chaining
      */
     public <I extends SpawnEggItem> SpawnEggDefinition<I> defineSpawnEgg(
-            String eggName,
-            SpawnEggDefinition.ItemFactory<I> itemFactory
+        String eggName,
+        SpawnEggDefinition.ItemFactory<I> itemFactory
     ) {
         return new SpawnEggDefinition<>(this, eggName, itemFactory);
     }
@@ -383,12 +368,9 @@ public abstract class ItemRegistry {
      * @param eggName The name identifier for the spawn egg
      * @return A new SpawnEggDefinition instance for method chaining
      */
-    public SpawnEggDefinition<SpawnEggItem> defineSpawnEgg(
-            String eggName
-    ) {
-        return defineSpawnEgg(
-                eggName,
-                (def) -> new SpawnEggItem(def.entityType(), def.getProperties())
+    public SpawnEggDefinition<SpawnEggItem> defineSpawnEgg(String eggName) {
+        return defineSpawnEgg(eggName, def ->
+            new SpawnEggItem(def.getProperties())
         );
     }
 
@@ -402,11 +384,17 @@ public abstract class ItemRegistry {
      * @param <I>          The type of smithing template item to create
      * @return A new SmithingTemplateDefinition instance for method chaining
      */
-    public <I extends SmithingTemplateItem> SmithingTemplateDefinition<I> defineSmithingTemplate(
-            String templateName,
-            SmithingTemplateDefinition.ItemFactory<I> itemFactory
+    public <I extends SmithingTemplateItem> SmithingTemplateDefinition<
+        I
+    > defineSmithingTemplate(
+        String templateName,
+        SmithingTemplateDefinition.ItemFactory<I> itemFactory
     ) {
-        return new SmithingTemplateDefinition<>(this, templateName, itemFactory);
+        return new SmithingTemplateDefinition<>(
+            this,
+            templateName,
+            itemFactory
+        );
     }
 
     /**
@@ -419,9 +407,9 @@ public abstract class ItemRegistry {
      * @return A new BoatItemDefinition instance for method chaining
      */
     public <I extends BoatItem> BoatItemDefinition<I> defineBoatItem(
-            String boatName,
-            BoatItemDefinition.ItemFactory<I> itemFactory,
-            boolean withChest
+        String boatName,
+        BoatItemDefinition.ItemFactory<I> itemFactory,
+        boolean withChest
     ) {
         return new BoatItemDefinition<>(this, boatName, itemFactory, withChest);
     }
@@ -434,12 +422,15 @@ public abstract class ItemRegistry {
      * @param boatName The name identifier for the boat item
      * @return A new BoatItemDefinition instance for method chaining
      */
-    public BoatItemDefinition<BoatItem> defineBoatItem(String boatName, boolean withChest) {
+    public BoatItemDefinition<BoatItem> defineBoatItem(
+        String boatName,
+        boolean withChest
+    ) {
         return new BoatItemDefinition<>(
-                this,
-                boatName,
-                (def) -> new BoatItem(def.entityType(), def.getProperties()),
-                withChest
+            this,
+            boatName,
+            def -> new BoatItem(def.entityType(), def.getProperties()),
+            withChest
         );
     }
 
@@ -453,12 +444,18 @@ public abstract class ItemRegistry {
      * @param tags Optional tags to apply to the item during data generation
      * @param <T>  The type of item being registered
      */
-    protected <T extends Item> void register(@NotNull ResourceKey<Item> key, T item, @Nullable TagKey<Item>[] tags) {
+    protected <T extends Item> void register(
+        @NotNull ResourceKey<Item> key,
+        T item,
+        @Nullable TagKey<Item>[] tags
+    ) {
         if (item != null && item != Items.AIR) {
             Registry.register(BuiltInRegistries.ITEM, key, item);
             items.put(key, item);
 
-            if (datagenTags != null && tags != null && tags.length > 0) datagenTags.put(item, tags);
+            if (
+                datagenTags != null && tags != null && tags.length > 0
+            ) datagenTags.put(item, tags);
         }
     }
 
@@ -472,7 +469,11 @@ public abstract class ItemRegistry {
      * @param <T>      The type of item being registered
      * @return The registered item instance
      */
-    public <T extends Item> T register(String itemPath, T item, TagKey<Item>... tags) {
+    public <T extends Item> T register(
+        String itemPath,
+        T item,
+        TagKey<Item>... tags
+    ) {
         register(key(itemPath), item, tags);
         return item;
     }
@@ -488,10 +489,13 @@ public abstract class ItemRegistry {
      * @deprecated Use {@link #register(String, Item, TagKey[])} instead - tools are registered the same way as other items
      */
     @Deprecated(forRemoval = true)
-    public <T extends Item> T registerAsTool(String itemPath, T item, TagKey<Item>... tags) {
+    public <T extends Item> T registerAsTool(
+        String itemPath,
+        T item,
+        TagKey<Item>... tags
+    ) {
         return register(itemPath, item, tags);
     }
-
 
     /**
      * Registers a spawn egg item with automatic dispenser behavior.
@@ -506,8 +510,15 @@ public abstract class ItemRegistry {
      */
     @Deprecated(forRemoval = true)
     @SafeVarargs
-    public final <T extends SpawnEggItem> T registerEgg(String path, T item, TagKey<Item>... tags) {
-        DispenserBlock.registerBehavior(item, SpawnEggDefinition.DISPENSE_SPAWN_EGG_BEHAVIOUR);
+    public final <T extends SpawnEggItem> T registerEgg(
+        String path,
+        T item,
+        TagKey<Item>... tags
+    ) {
+        DispenserBlock.registerBehavior(
+            item,
+            SpawnEggDefinition.DISPENSE_SPAWN_EGG_BEHAVIOUR
+        );
         return register(path, item, tags);
     }
 
@@ -523,15 +534,14 @@ public abstract class ItemRegistry {
      */
     @Deprecated(forRemoval = true)
     public SmithingTemplateItem registerSmithingTemplateItem(
-            String path,
-            List<ResourceLocation> baseSlotEmptyIcons,
-            List<ResourceLocation> additionalSlotEmptyIcons
+        String path,
+        List<Identifier> baseSlotEmptyIcons,
+        List<Identifier> additionalSlotEmptyIcons
     ) {
-        final SmithingTemplateItem item = SmithingTemplates
-                .create(C, path)
-                .setBaseSlotEmptyIcons(baseSlotEmptyIcons)
-                .setAdditionalSlotEmptyIcons(additionalSlotEmptyIcons)
-                .build();
+        final SmithingTemplateItem item = SmithingTemplates.create(C, path)
+            .setBaseSlotEmptyIcons(baseSlotEmptyIcons)
+            .setAdditionalSlotEmptyIcons(additionalSlotEmptyIcons)
+            .build();
 
         return registerSmithingTemplateItem(path + "_smithing_template", item);
     }
@@ -548,8 +558,8 @@ public abstract class ItemRegistry {
      */
     @Deprecated(forRemoval = true)
     public <T extends SmithingTemplateItem> T registerSmithingTemplateItem(
-            String path,
-            T item
+        String path,
+        T item
     ) {
         return register(path, item);
     }
@@ -579,9 +589,14 @@ public abstract class ItemRegistry {
             datagenTags.forEach(ctx::add);
         }
         items
-                .entrySet()
-                .stream()
-                .filter(i -> i.getValue() instanceof ItemTagProvider)
-                .forEach(i -> ((ItemTagProvider) i.getValue()).registerItemTags(i.getKey().location(), ctx));
+            .entrySet()
+            .stream()
+            .filter(i -> i.getValue() instanceof ItemTagProvider)
+            .forEach(i ->
+                ((ItemTagProvider) i.getValue()).registerItemTags(
+                    i.getKey().identifier(),
+                    ctx
+                )
+            );
     }
 }

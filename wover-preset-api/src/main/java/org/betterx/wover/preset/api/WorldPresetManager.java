@@ -1,19 +1,17 @@
 package org.betterx.wover.preset.api;
 
-import org.betterx.wover.events.api.Event;
-import org.betterx.wover.preset.api.event.OnBootstrapWorldPresets;
-import org.betterx.wover.preset.impl.WorldPresetsManagerImpl;
-
+import java.util.Map;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
-
-import java.util.Map;
+import org.betterx.wover.events.api.Event;
+import org.betterx.wover.preset.api.event.OnBootstrapWorldPresets;
+import org.betterx.wover.preset.impl.WorldPresetsManagerImpl;
 
 /**
  * Utility class for {@link WorldPreset}s.
@@ -22,13 +20,15 @@ import java.util.Map;
  * consider generating presets in the data generator whenever possible (see WoverWorldPresetProvider).
  */
 public class WorldPresetManager {
+
     /**
      * The event that is fired when the Registry for {@link WorldPreset}s
      * is being bootstrapped. In general, it is best to generate presets
      * in the data generator whenever possible (see WoverWorldPresetProvider)
      * for Details.
      */
-    public static final Event<OnBootstrapWorldPresets> BOOTSTRAP_WORLD_PRESETS = WorldPresetsManagerImpl.BOOTSTRAP_WORLD_PRESETS;
+    public static final Event<OnBootstrapWorldPresets> BOOTSTRAP_WORLD_PRESETS =
+        WorldPresetsManagerImpl.BOOTSTRAP_WORLD_PRESETS;
 
     /**
      * Creates a {@link ResourceKey} for a {@link WorldPreset}.
@@ -36,7 +36,7 @@ public class WorldPresetManager {
      * @param loc The location of the preset.
      * @return The key.
      */
-    public static ResourceKey<WorldPreset> createKey(ResourceLocation loc) {
+    public static ResourceKey<WorldPreset> createKey(Identifier loc) {
         return WorldPresetsManagerImpl.createKey(loc);
     }
 
@@ -47,7 +47,10 @@ public class WorldPresetManager {
      * @param key    The {@link ResourceKey} of the preset.
      * @return The holder or {@code null}
      */
-    public static Holder<WorldPreset> get(RegistryAccess access, ResourceKey<WorldPreset> key) {
+    public static Holder<WorldPreset> get(
+        RegistryAccess access,
+        ResourceKey<WorldPreset> key
+    ) {
         return WorldPresetsManagerImpl.get(access, key);
     }
 
@@ -68,7 +71,10 @@ public class WorldPresetManager {
      * Suggested defaults have a priority. The preset with the highest priority will be
      * used as the default preset.
      */
-    public static void suggestDefault(ResourceKey<WorldPreset> preset, int priority) {
+    public static void suggestDefault(
+        ResourceKey<WorldPreset> preset,
+        int priority
+    ) {
         WorldPresetsManagerImpl.suggestDefault(preset, priority);
     }
 
@@ -78,14 +84,11 @@ public class WorldPresetManager {
      * @param dimensions The dimensions registry.
      * @return The {@link WorldPreset}.
      */
-    public static WorldPreset withDimensions(
-            WorldDimensions dimensions
-    ) {
+    public static WorldPreset withDimensions(WorldDimensions dimensions) {
         return WorldPresetsManagerImpl.withDimensions(dimensions);
     }
 
-    private WorldPresetManager() {
-    }
+    private WorldPresetManager() {}
 
     /**
      * Returns a Map of all dimensions for the given preset.
@@ -93,7 +96,9 @@ public class WorldPresetManager {
      * @param preset The preset to read
      * @return The dimensions.
      */
-    public static Map<ResourceKey<LevelStem>, LevelStem> getDimensions(Holder<WorldPreset> preset) {
+    public static Map<ResourceKey<LevelStem>, LevelStem> getDimensions(
+        Holder<WorldPreset> preset
+    ) {
         return WorldPresetsManagerImpl.getDimensions(preset);
     }
 
@@ -104,7 +109,10 @@ public class WorldPresetManager {
      * @param key    The stems key
      * @return The stem.
      */
-    public static LevelStem getDimension(Holder<WorldPreset> preset, ResourceKey<LevelStem> key) {
+    public static LevelStem getDimension(
+        Holder<WorldPreset> preset,
+        ResourceKey<LevelStem> key
+    ) {
         return WorldPresetsManagerImpl.getDimension(preset, key);
     }
 
@@ -117,11 +125,15 @@ public class WorldPresetManager {
      * @return The {@link WorldPreset}.
      */
     public static WorldPreset fromStems(
-            LevelStem overworldStem,
-            LevelStem netherStem,
-            LevelStem endStem
+        LevelStem overworldStem,
+        LevelStem netherStem,
+        LevelStem endStem
     ) {
-        return WorldPresetsManagerImpl.fromStems(overworldStem, netherStem, endStem);
+        return WorldPresetsManagerImpl.fromStems(
+            overworldStem,
+            netherStem,
+            endStem
+        );
     }
 
     /**
@@ -130,7 +142,9 @@ public class WorldPresetManager {
      * @param dimensions The stems.
      * @return The {@link WorldPreset}.
      */
-    public static WorldPreset of(Map<ResourceKey<LevelStem>, LevelStem> dimensions) {
+    public static WorldPreset of(
+        Map<ResourceKey<LevelStem>, LevelStem> dimensions
+    ) {
         return new WorldPreset(dimensions);
     }
 }

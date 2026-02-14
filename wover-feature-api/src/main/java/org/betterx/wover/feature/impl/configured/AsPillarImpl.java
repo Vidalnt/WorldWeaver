@@ -1,15 +1,9 @@
 package org.betterx.wover.feature.impl.configured;
 
-import org.betterx.wover.feature.api.Features;
-import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
-import org.betterx.wover.feature.api.configured.configurators.AsPillar;
-import org.betterx.wover.feature.api.features.PillarFeature;
-import org.betterx.wover.feature.api.features.config.PillarFeatureConfig;
-
 import net.minecraft.core.Direction;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.block.Block;
@@ -17,22 +11,31 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
-
+import org.betterx.wover.feature.api.Features;
+import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
+import org.betterx.wover.feature.api.configured.configurators.AsPillar;
+import org.betterx.wover.feature.api.features.PillarFeature;
+import org.betterx.wover.feature.api.features.config.PillarFeatureConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class AsPillarImpl extends FeatureConfiguratorImpl<PillarFeatureConfig, PillarFeature> implements AsPillar {
+public class AsPillarImpl
+    extends FeatureConfiguratorImpl<PillarFeatureConfig, PillarFeature>
+    implements AsPillar
+{
+
     private IntProvider maxHeight;
     private IntProvider minHeight;
     private BlockStateProvider stateProvider;
 
     private PillarFeatureConfig.KnownTransformers transformer;
     private Direction direction = Direction.UP;
-    private BlockPredicate allowedPlacement = BlockPredicate.ONLY_IN_AIR_PREDICATE;
+    private BlockPredicate allowedPlacement =
+        BlockPredicate.ONLY_IN_AIR_PREDICATE;
 
     AsPillarImpl(
-            @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
-            @Nullable ResourceKey<ConfiguredFeature<?, ?>> key
+        @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
+        @Nullable ResourceKey<ConfiguredFeature<?, ?>> key
     ) {
         super(ctx, key);
     }
@@ -44,7 +47,9 @@ public class AsPillarImpl extends FeatureConfiguratorImpl<PillarFeatureConfig, P
     }
 
     @Override
-    public AsPillar transformer(@NotNull PillarFeatureConfig.KnownTransformers transformer) {
+    public AsPillar transformer(
+        @NotNull PillarFeatureConfig.KnownTransformers transformer
+    ) {
         this.transformer = transformer;
         return this;
     }
@@ -95,7 +100,6 @@ public class AsPillarImpl extends FeatureConfiguratorImpl<PillarFeatureConfig, P
         return this;
     }
 
-
     @Override
     public @NotNull PillarFeatureConfig createConfiguration() {
         if (this.transformer == null) {
@@ -109,12 +113,12 @@ public class AsPillarImpl extends FeatureConfiguratorImpl<PillarFeatureConfig, P
         }
         if (minHeight == null) minHeight = ConstantInt.of(0);
         return new PillarFeatureConfig(
-                minHeight,
-                maxHeight,
-                direction,
-                allowedPlacement,
-                stateProvider,
-                transformer
+            minHeight,
+            maxHeight,
+            direction,
+            allowedPlacement,
+            stateProvider,
+            transformer
         );
     }
 
@@ -124,12 +128,15 @@ public class AsPillarImpl extends FeatureConfiguratorImpl<PillarFeatureConfig, P
     }
 
     public static class Key extends ConfiguredFeatureKey<AsPillar> {
-        public Key(ResourceLocation id) {
+
+        public Key(Identifier id) {
             super(id);
         }
 
         @Override
-        public AsPillar bootstrap(@NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx) {
+        public AsPillar bootstrap(
+            @NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx
+        ) {
             return new AsPillarImpl(ctx, key);
         }
     }

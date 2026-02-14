@@ -4,18 +4,20 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.vehicle.AbstractBoat;
-import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraft.world.entity.vehicle.ChestBoat;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.entity.vehicle.boat.Boat;
+import net.minecraft.world.entity.vehicle.boat.ChestBoat;
 import net.minecraft.world.item.BoatItem;
 import net.minecraft.world.level.Level;
 
-public class BoatItemDefinition<I extends BoatItem> extends ItemDefinition<I, BoatItemDefinition<I>> {
+public class BoatItemDefinition<
+    I extends BoatItem
+> extends ItemDefinition<I, BoatItemDefinition<I>> {
+
     public record BoatType(
-            EntityType<? extends AbstractBoat> entityType,
-            BoatItem item
-    ) {
-    }
+        EntityType<? extends AbstractBoat> entityType,
+        BoatItem item
+    ) {}
 
     /**
      * Factory interface for creating boat items from configuration objects.
@@ -23,31 +25,44 @@ public class BoatItemDefinition<I extends BoatItem> extends ItemDefinition<I, Bo
      *
      * @param <I> The type of boat item to create
      */
-    public interface ItemFactory<I extends BoatItem> extends ItemDefinition.ItemFactory<I, BoatItemDefinition<I>> {
-    }
+    public interface ItemFactory<
+        I extends BoatItem
+    > extends ItemDefinition.ItemFactory<I, BoatItemDefinition<I>> {}
 
     private EntityType<? extends AbstractBoat> entityType;
     private BoatItem boatItem;
     private final boolean withChest;
 
     protected BoatItemDefinition(
-            ItemRegistry registry,
-            String itemName,
-            ItemFactory<I> itemFactory,
-            boolean withChest
+        ItemRegistry registry,
+        String itemName,
+        ItemFactory<I> itemFactory,
+        boolean withChest
     ) {
         super(registry, itemName, itemFactory);
         this.withChest = withChest;
     }
 
     @SuppressWarnings("unchecked")
-    Boat boatFactory(EntityType<? extends AbstractBoat> entityType, Level level) {
-        return new Boat((EntityType<? extends Boat>) entityType, level, () -> this.boatItem);
+    Boat boatFactory(
+        EntityType<? extends AbstractBoat> entityType,
+        Level level
+    ) {
+        return new Boat((EntityType<? extends Boat>) entityType, level, () ->
+            this.boatItem
+        );
     }
 
     @SuppressWarnings("unchecked")
-    ChestBoat chestBoatFactory(EntityType<? extends AbstractBoat> entityType, Level level) {
-        return new ChestBoat((EntityType<? extends ChestBoat>) entityType, level, () -> this.boatItem);
+    ChestBoat chestBoatFactory(
+        EntityType<? extends AbstractBoat> entityType,
+        Level level
+    ) {
+        return new ChestBoat(
+            (EntityType<? extends ChestBoat>) entityType,
+            level,
+            () -> this.boatItem
+        );
     }
 
     @Override
@@ -55,20 +70,18 @@ public class BoatItemDefinition<I extends BoatItem> extends ItemDefinition<I, Bo
         properties.stacksTo(1);
 
         final var entityKey = registry.entityKey(itemKey);
-        final EntityType.EntityFactory<? extends AbstractBoat> factory = withChest
-                ? this::chestBoatFactory
-                : this::boatFactory;
+        final EntityType.EntityFactory<? extends AbstractBoat> factory =
+            withChest ? this::chestBoatFactory : this::boatFactory;
 
         this.entityType = Registry.register(
-                BuiltInRegistries.ENTITY_TYPE,
-                entityKey,
-                EntityType.Builder
-                        .of(factory, MobCategory.MISC)
-                        .noLootTable()
-                        .sized(1.375F, 0.5625F)
-                        .eyeHeight(0.5625F)
-                        .clientTrackingRange(10)
-                        .build(entityKey)
+            BuiltInRegistries.ENTITY_TYPE,
+            entityKey,
+            EntityType.Builder.of(factory, MobCategory.MISC)
+                .noLootTable()
+                .sized(1.375F, 0.5625F)
+                .eyeHeight(0.5625F)
+                .clientTrackingRange(10)
+                .build(entityKey)
         );
     }
 
@@ -81,7 +94,6 @@ public class BoatItemDefinition<I extends BoatItem> extends ItemDefinition<I, Bo
     public EntityType<? extends AbstractBoat> entityType() {
         return this.entityType;
     }
-
 
     public BoatType buildAndRegisterBoat() {
         var item = super.buildAndRegister();

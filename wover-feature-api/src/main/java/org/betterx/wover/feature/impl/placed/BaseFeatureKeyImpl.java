@@ -1,31 +1,32 @@
 package org.betterx.wover.feature.impl.placed;
 
-import org.betterx.wover.feature.api.placed.BasePlacedFeatureKey;
-import org.betterx.wover.feature.api.placed.FeaturePlacementBuilder;
-
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-
+import org.betterx.wover.feature.api.placed.BasePlacedFeatureKey;
+import org.betterx.wover.feature.api.placed.FeaturePlacementBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class BaseFeatureKeyImpl<K extends BasePlacedFeatureKey<K>> implements BasePlacedFeatureKey<K> {
+public class BaseFeatureKeyImpl<
+    K extends BasePlacedFeatureKey<K>
+> implements BasePlacedFeatureKey<K> {
+
     public final ResourceKey<PlacedFeature> key;
 
-    protected GenerationStep.Decoration decoration = GenerationStep.Decoration.VEGETAL_DECORATION;
+    protected GenerationStep.Decoration decoration =
+        GenerationStep.Decoration.VEGETAL_DECORATION;
 
-    BaseFeatureKeyImpl(ResourceLocation featureId) {
+    BaseFeatureKeyImpl(Identifier featureId) {
         this.key = ResourceKey.create(Registries.PLACED_FEATURE, featureId);
     }
-
 
     @Override
     public GenerationStep.Decoration getDecoration() {
@@ -44,7 +45,9 @@ public class BaseFeatureKeyImpl<K extends BasePlacedFeatureKey<K>> implements Ba
     }
 
     @Nullable
-    public Holder<PlacedFeature> getHolder(@Nullable HolderGetter<PlacedFeature> getter) {
+    public Holder<PlacedFeature> getHolder(
+        @Nullable HolderGetter<PlacedFeature> getter
+    ) {
         return PlacedFeatureManagerImpl.getHolder(getter, key);
     }
 
@@ -57,16 +60,16 @@ public class BaseFeatureKeyImpl<K extends BasePlacedFeatureKey<K>> implements Ba
     }
 
     @Nullable
-    public Holder<PlacedFeature> getHolder(@NotNull BootstrapContext<?> context) {
+    public Holder<PlacedFeature> getHolder(
+        @NotNull BootstrapContext<?> context
+    ) {
         return getHolder(context.lookup(Registries.PLACED_FEATURE));
     }
 
     protected FeaturePlacementBuilder place(
-            @NotNull BootstrapContext<PlacedFeature> bootstrapContext,
-            Holder<ConfiguredFeature<?, ?>> holder
+        @NotNull BootstrapContext<PlacedFeature> bootstrapContext,
+        Holder<ConfiguredFeature<?, ?>> holder
     ) {
         return new FeaturePlacementBuilderImpl(bootstrapContext, key, holder);
     }
 }
-
-

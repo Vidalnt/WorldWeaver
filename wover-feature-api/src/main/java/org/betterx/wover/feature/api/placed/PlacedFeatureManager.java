@@ -1,5 +1,15 @@
 package org.betterx.wover.feature.api.placed;
 
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import org.betterx.wover.events.api.Event;
 import org.betterx.wover.events.api.types.OnBootstrapRegistry;
 import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
@@ -7,18 +17,6 @@ import org.betterx.wover.feature.api.configured.configurators.FeatureConfigurato
 import org.betterx.wover.feature.impl.placed.PlacedConfiguredFeatureKeyImpl;
 import org.betterx.wover.feature.impl.placed.PlacedFeatureKeyImpl;
 import org.betterx.wover.feature.impl.placed.PlacedFeatureManagerImpl;
-
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderGetter;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
-import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,27 +29,30 @@ import org.jetbrains.annotations.Nullable;
  * {@link PlacedFeature} in code, you can use the {@link #BOOTSTRAP_PLACED_FEATURES} Event.
  */
 public class PlacedFeatureManager {
+
     /**
      * The event that is fired when the Registry for a {@link PlacedFeature}
      * is being bootstrapped. In general, it is best to generate presets
      * in the data generator whenever possible (see WoverRegistryProvider)
      * for Details.
      */
-    public static final Event<OnBootstrapRegistry<PlacedFeature>> BOOTSTRAP_PLACED_FEATURES =
-            PlacedFeatureManagerImpl.BOOTSTRAP_PLACED_FEATURES;
+    public static final Event<
+        OnBootstrapRegistry<PlacedFeature>
+    > BOOTSTRAP_PLACED_FEATURES =
+        PlacedFeatureManagerImpl.BOOTSTRAP_PLACED_FEATURES;
 
     /**
-     * Creates a {@link PlacedFeatureKey} for the given {@link ResourceLocation}.
+     * Creates a {@link PlacedFeatureKey} for the given {@link Identifier}.
      *
      * @param location The location of the {@link PlacedFeature}
      * @return The {@link PlacedFeatureKey}
      */
-    public static PlacedFeatureKey createKey(ResourceLocation location) {
+    public static PlacedFeatureKey createKey(Identifier location) {
         return new PlacedFeatureKeyImpl(location);
     }
 
     /**
-     * Creates a {@link PlacedFeatureKey} for the given {@link ResourceLocation}. The resulting
+     * Creates a {@link PlacedFeatureKey} for the given {@link Identifier}. The resulting
      * {@link PlacedFeatureKey} will place the {@link ConfiguredFeature} referenced by the given
      * {@link ResourceKey}.
      *
@@ -62,17 +63,19 @@ public class PlacedFeatureManager {
      * @param <B>        The {@link FeatureConfigurator} for the {@link ConfiguredFeature}
      * @return The {@link PlacedFeatureKey}
      */
-    public static <FC extends FeatureConfiguration, F extends Feature<FC>, B extends FeatureConfigurator<FC, F>> PlacedConfiguredFeatureKey
-    createKey(
-            ResourceLocation location,
-            ResourceKey<ConfiguredFeature<?, ?>> configured
+    public static <
+        FC extends FeatureConfiguration,
+        F extends Feature<FC>,
+        B extends FeatureConfigurator<FC, F>
+    > PlacedConfiguredFeatureKey createKey(
+        Identifier location,
+        ResourceKey<ConfiguredFeature<?, ?>> configured
     ) {
         return new PlacedConfiguredFeatureKeyImpl(location, configured);
     }
 
-
     /**
-     * Creates a {@link PlacedFeatureKey} for the given {@link ResourceLocation}. The resulting
+     * Creates a {@link PlacedFeatureKey} for the given {@link Identifier}. The resulting
      * {@link PlacedFeatureKey} will place the {@link ConfiguredFeature} referenced by the given
      * {@link ConfiguredFeatureKey}.
      *
@@ -81,12 +84,16 @@ public class PlacedFeatureManager {
      * @param <B>                  The {@link FeatureConfigurator} for the {@link ConfiguredFeature}
      * @return The {@link PlacedFeatureKey}
      */
-    public static <B extends FeatureConfigurator<?, ?>> PlacedConfiguredFeatureKey
-    createKey(
-            ResourceLocation location,
-            ConfiguredFeatureKey<B> configuredFeatureKey
+    public static <
+        B extends FeatureConfigurator<?, ?>
+    > PlacedConfiguredFeatureKey createKey(
+        Identifier location,
+        ConfiguredFeatureKey<B> configuredFeatureKey
     ) {
-        return new PlacedConfiguredFeatureKeyImpl(location, configuredFeatureKey);
+        return new PlacedConfiguredFeatureKeyImpl(
+            location,
+            configuredFeatureKey
+        );
     }
 
     /**
@@ -98,11 +105,15 @@ public class PlacedFeatureManager {
      * @param <B>                  The {@link FeatureConfigurator} for the {@link ConfiguredFeature}
      * @return The {@link PlacedFeatureKey}
      */
-    public static <B extends FeatureConfigurator<?, ?>> PlacedConfiguredFeatureKey
-    createKey(
-            ConfiguredFeatureKey<B> configuredFeatureKey
+    public static <
+        B extends FeatureConfigurator<?, ?>
+    > PlacedConfiguredFeatureKey createKey(
+        ConfiguredFeatureKey<B> configuredFeatureKey
     ) {
-        return new PlacedConfiguredFeatureKeyImpl(configuredFeatureKey.key.location(), configuredFeatureKey);
+        return new PlacedConfiguredFeatureKeyImpl(
+            configuredFeatureKey.key.location(),
+            configuredFeatureKey
+        );
     }
 
     /**
@@ -116,8 +127,8 @@ public class PlacedFeatureManager {
      */
     @Nullable
     public static Holder<PlacedFeature> getHolder(
-            @Nullable HolderGetter<PlacedFeature> getter,
-            @NotNull ResourceKey<PlacedFeature> key
+        @Nullable HolderGetter<PlacedFeature> getter,
+        @NotNull ResourceKey<PlacedFeature> key
     ) {
         return PlacedFeatureManagerImpl.getHolder(getter, key);
     }
@@ -134,12 +145,14 @@ public class PlacedFeatureManager {
      */
     @Nullable
     public static Holder<PlacedFeature> getHolder(
-            @Nullable BootstrapContext<?> context,
-            @NotNull ResourceKey<PlacedFeature> key
+        @Nullable BootstrapContext<?> context,
+        @NotNull ResourceKey<PlacedFeature> key
     ) {
-        return PlacedFeatureManagerImpl.getHolder(context.lookup(Registries.PLACED_FEATURE), key);
+        return PlacedFeatureManagerImpl.getHolder(
+            context.lookup(Registries.PLACED_FEATURE),
+            key
+        );
     }
 
-    private PlacedFeatureManager() {
-    }
+    private PlacedFeatureManager() {}
 }

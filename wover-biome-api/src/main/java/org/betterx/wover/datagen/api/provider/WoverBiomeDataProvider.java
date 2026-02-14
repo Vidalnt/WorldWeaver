@@ -1,27 +1,26 @@
 package org.betterx.wover.datagen.api.provider;
 
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import org.betterx.wover.biome.api.data.BiomeData;
 import org.betterx.wover.biome.api.data.BiomeDataRegistry;
 import org.betterx.wover.core.api.ModCore;
 import org.betterx.wover.datagen.api.WoverRegistryContentProvider;
-
-import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.resources.ResourceLocation;
-
 import org.jetbrains.annotations.NotNull;
 
 /**
  * A {@link WoverRegistryContentProvider} for {@link BiomeData}.
  */
-public abstract class WoverBiomeDataProvider extends WoverRegistryContentProvider<BiomeData> {
+public abstract class WoverBiomeDataProvider
+    extends WoverRegistryContentProvider<BiomeData>
+{
+
     /**
      * Creates a new instance of {@link WoverRegistryContentProvider}.
      *
      * @param modCore The ModCore instance of the Mod that is providing this instance.
      */
-    public WoverBiomeDataProvider(
-            @NotNull ModCore modCore
-    ) {
+    public WoverBiomeDataProvider(@NotNull ModCore modCore) {
         this(modCore, modCore.id("default"));
     }
 
@@ -33,10 +32,14 @@ public abstract class WoverBiomeDataProvider extends WoverRegistryContentProvide
      *                   needs a unique id.
      */
     public WoverBiomeDataProvider(
-            @NotNull ModCore modCore,
-            @NotNull ResourceLocation providerId
+        @NotNull ModCore modCore,
+        @NotNull Identifier providerId
     ) {
-        super(modCore, providerId.toString() + " (Biome Data)", BiomeDataRegistry.BIOME_DATA_REGISTRY);
+        super(
+            modCore,
+            providerId.toString() + " (Biome Data)",
+            BiomeDataRegistry.BIOME_DATA_REGISTRY
+        );
     }
 
     /**
@@ -47,6 +50,3 @@ public abstract class WoverBiomeDataProvider extends WoverRegistryContentProvide
     @Override
     protected abstract void bootstrap(BootstrapContext<BiomeData> context);
 }
-
-
-

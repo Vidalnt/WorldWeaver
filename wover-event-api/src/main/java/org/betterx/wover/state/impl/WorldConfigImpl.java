@@ -1,32 +1,30 @@
 package org.betterx.wover.state.impl;
 
+import static org.betterx.wover.events.impl.AbstractEvent.SYSTEM_PRIORITY;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import de.ambertation.wunderlib.utils.Version;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.util.Util;
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.storage.LevelStorageSource;
 import org.betterx.wover.core.api.ModCore;
 import org.betterx.wover.core.impl.registry.ModCoreImpl;
 import org.betterx.wover.entrypoint.LibWoverEvents;
 import org.betterx.wover.events.api.Event;
 import org.betterx.wover.events.api.WorldLifecycle;
 import org.betterx.wover.events.api.types.OnWorldConfig;
-import static org.betterx.wover.events.impl.AbstractEvent.SYSTEM_PRIORITY;
 import org.betterx.wover.events.impl.EventImpl;
 import org.betterx.wover.legacy.api.LegacyHelper;
 import org.betterx.wover.util.Pair;
-
-import net.minecraft.Util;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtAccounter;
-import net.minecraft.nbt.NbtIo;
-import net.minecraft.world.level.storage.LevelResource;
-import net.minecraft.world.level.storage.LevelStorageSource;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,9 +34,11 @@ import org.jetbrains.annotations.NotNull;
  * This class provides the ability for a mod to store persistent data inside a world.
  */
 public class WorldConfigImpl {
+
     private static final Map<ModCore, CompoundTag> TAGS = Maps.newHashMap();
     private static final List<ModCore> MODS = Lists.newArrayList();
-    private static final Map<ModCore, EventImpl<OnWorldConfig>> EVENTS = Maps.newHashMap();
+    private static final Map<ModCore, EventImpl<OnWorldConfig>> EVENTS =
+        Maps.newHashMap();
 
     private static final String TAG_CREATED = "create_version";
     private static final String TAG_MODIFIED = "modify_version";
@@ -46,27 +46,46 @@ public class WorldConfigImpl {
 
     @ApiStatus.Internal
     public static void initialize() {
-        WorldLifecycle.WORLD_FOLDER_READY.subscribe(WorldConfigImpl::loadForWorld, SYSTEM_PRIORITY);
+        WorldLifecycle.WORLD_FOLDER_READY.subscribe(
+            WorldConfigImpl::loadForWorld,
+            SYSTEM_PRIORITY
+        );
         registerMod(ModCoreImpl.GLOBAL_MOD);
         registerMod(LegacyHelper.BCLIB_CORE);
         registerMod(LegacyHelper.WORLDS_TOGETHER_CORE);
     }
 
-    private static void loadForWorld(LevelStorageSource.LevelStorageAccess levelStorageAccess) {
-        dataDir = levelStorageAccess.getLevelPath(LevelResource.ROOT).resolve("data").toFile();
-        final List<Pair<ModCore, OnWorldConfig.State>> eventQueue = new ArrayList<>(MODS.size());
+    private static void loadForWorld(
+        LevelStorageSource.LevelStorageAccess levelStorageAccess
+    ) {
+        dataDir = levelStorageAccess
+            .getLevelPath(LevelResource.ROOT)
+            .resolve("data")
+            .toFile();
+        final List<Pair<ModCore, OnWorldConfig.State>> eventQueue =
+            new ArrayList<>(MODS.size());
         MODS.stream()
             .parallel()
             .forEach(modCore -> {
                 File file = new File(dataDir, modCore.modId + ".nbt");
                 if (file.exists()) {
                     try {
-                        CompoundTag root = NbtIo.readCompressed(file.toPath(), NbtAccounter.create(0x200000L));
+                        CompoundTag root = NbtIo.readCompressed(
+                            file.toPath(),
+                            NbtAccounter.create(0x200000L)
+                        );
                         TAGS.put(modCore, root);
-                        eventQueue.add(new Pair<>(modCore, OnWorldConfig.State.LOADED));
+                        eventQueue.add(
+                            new Pair<>(modCore, OnWorldConfig.State.LOADED)
+                        );
                     } catch (IOException e) {
-                        LibWoverEvents.C.log.error("World data loading failed", e);
-                        eventQueue.add(new Pair<>(modCore, OnWorldConfig.State.LOAD_FAILED));
+                        LibWoverEvents.C.log.error(
+                            "World data loading failed",
+                            e
+                        );
+                        eventQueue.add(
+                            new Pair<>(modCore, OnWorldConfig.State.LOAD_FAILED)
+                        );
                     }
                 } else {
                     //the event will be emitted later, when all configs were loaded or created
@@ -74,17 +93,19 @@ public class WorldConfigImpl {
                     if (modCore == LegacyHelper.BCLIB_CORE) {
                         root.putString("version", "9.9.9");
                     }
-                    eventQueue.add(new Pair<>(modCore, OnWorldConfig.State.CREATED));
+                    eventQueue.add(
+                        new Pair<>(modCore, OnWorldConfig.State.CREATED)
+                    );
                 }
             });
 
         eventQueue.forEach(pair -> {
-            EVENTS.computeIfPresent(
-                    pair.first, (key, event) -> {
-                        event.emit(subscriber -> subscriber.config(key, TAGS.get(key), pair.second));
-                        return event;
-                    }
-            );
+            EVENTS.computeIfPresent(pair.first, (key, event) -> {
+                event.emit(subscriber ->
+                    subscriber.config(key, TAGS.get(key), pair.second)
+                );
+                return event;
+            });
         });
     }
 
@@ -96,26 +117,28 @@ public class WorldConfigImpl {
         root.putString(TAG_MODIFIED, modCore.getModVersion().toString());
 
         if (emit) {
-            EVENTS.computeIfPresent(
-                    modCore, (key, event) -> {
-                        event.emit(subscriber -> subscriber.config(modCore, root, OnWorldConfig.State.CREATED));
-                        return event;
-                    }
-            );
+            EVENTS.computeIfPresent(modCore, (key, event) -> {
+                event.emit(subscriber ->
+                    subscriber.config(
+                        modCore,
+                        root,
+                        OnWorldConfig.State.CREATED
+                    )
+                );
+                return event;
+            });
         }
 
         return root;
     }
 
     public static void registerMod(ModCore modCore) {
-        if (!MODS.contains(modCore))
-            MODS.add(modCore);
+        if (!MODS.contains(modCore)) MODS.add(modCore);
     }
 
     public static Event<OnWorldConfig> event(ModCore modCore) {
-        return EVENTS.computeIfAbsent(
-                modCore,
-                key -> new EventImpl<>("WORLD_CONFIG_READY (" + key.modId + ")")
+        return EVENTS.computeIfAbsent(modCore, key ->
+            new EventImpl<>("WORLD_CONFIG_READY (" + key.modId + ")")
         );
     }
 
@@ -131,7 +154,10 @@ public class WorldConfigImpl {
         return MODS.contains(modCore);
     }
 
-    public static @NotNull CompoundTag getCompoundTag(ModCore modCore, String path) {
+    public static @NotNull CompoundTag getCompoundTag(
+        ModCore modCore,
+        String path
+    ) {
         String[] parts = path.split("\\.");
         CompoundTag tag = getRootTag(modCore);
         for (String part : parts) {
@@ -148,7 +174,11 @@ public class WorldConfigImpl {
 
     public static void saveFile(ModCore modCore) {
         if (!hasMod(modCore)) {
-            LibWoverEvents.C.log.error("Mod " + modCore.modId + " is not registered for a worldconfig file");
+            LibWoverEvents.C.log.error(
+                "Mod " +
+                    modCore.modId +
+                    " is not registered for a worldconfig file"
+            );
             return;
         }
 
@@ -159,12 +189,19 @@ public class WorldConfigImpl {
             CompoundTag tag = getRootTag(modCore);
             tag.putString(TAG_MODIFIED, modCore.getModVersion().toString());
 
-            final File tempFile = new File(dataDir, modCore.modId + "_temp.nbt");
+            final File tempFile = new File(
+                dataDir,
+                modCore.modId + "_temp.nbt"
+            );
             NbtIo.writeCompressed(tag, tempFile.toPath());
 
             final File oldFile = new File(dataDir, modCore.modId + "_old.nbt");
             final File dataFile = new File(dataDir, modCore.modId + ".nbt");
-            Util.safeReplaceFile(dataFile.toPath(), tempFile.toPath(), oldFile.toPath());
+            Util.safeReplaceFile(
+                dataFile.toPath(),
+                tempFile.toPath(),
+                oldFile.toPath()
+            );
         } catch (IOException e) {
             LibWoverEvents.C.log.error("World data saving failed", e);
         }
@@ -177,7 +214,9 @@ public class WorldConfigImpl {
      * @return The Version object
      */
     public static Version getModifiedVersion(ModCore modCore) {
-        return new Version(getRootTag(modCore).getStringOr(TAG_MODIFIED, "0.0.0"));
+        return new Version(
+            getRootTag(modCore).getStringOr(TAG_MODIFIED, "0.0.0")
+        );
     }
 
     /**
@@ -187,7 +226,8 @@ public class WorldConfigImpl {
      * @return The Version object
      */
     public static Version getCreatedVersion(ModCore modCore) {
-        return new Version(getRootTag(modCore).getStringOr(TAG_CREATED, "0.0.0"));
+        return new Version(
+            getRootTag(modCore).getStringOr(TAG_CREATED, "0.0.0")
+        );
     }
 }
-

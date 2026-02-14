@@ -1,18 +1,12 @@
 package org.betterx.wover.poi.impl;
 
-import org.betterx.wover.events.api.WorldLifecycle;
-import org.betterx.wover.events.impl.EventImpl;
-import org.betterx.wover.poi.api.PoiTypeExtension;
-import org.betterx.wover.poi.api.WoverPoiType;
-import org.betterx.wover.state.api.WorldState;
-import org.betterx.wover.tag.api.predefined.CommonPoiTags;
-
+import java.util.*;
 import net.minecraft.core.Holder;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.tags.TagKey;
@@ -22,28 +16,42 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.WorldData;
-
-import java.util.*;
+import org.betterx.wover.events.api.WorldLifecycle;
+import org.betterx.wover.events.impl.EventImpl;
+import org.betterx.wover.poi.api.PoiTypeExtension;
+import org.betterx.wover.poi.api.WoverPoiType;
+import org.betterx.wover.state.api.WorldState;
+import org.betterx.wover.tag.api.predefined.CommonPoiTags;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 public class PoiManagerImpl {
+
     public static WoverPoiType register(
-            ResourceLocation location,
-            Set<BlockState> matchingStates,
-            int maxTickets,
-            int validRanges,
-            @Nullable TagKey<Block> tag
+        Identifier location,
+        Set<BlockState> matchingStates,
+        int maxTickets,
+        int validRanges,
+        @Nullable TagKey<Block> tag
     ) {
-        ResourceKey<PoiType> key = ResourceKey.create(Registries.POINT_OF_INTEREST_TYPE, location);
-        PoiType type = PoiTypes.register(
-                BuiltInRegistries.POINT_OF_INTEREST_TYPE,
-                key,
-                matchingStates,
-                maxTickets,
-                validRanges
+        ResourceKey<PoiType> key = ResourceKey.create(
+            Registries.POINT_OF_INTEREST_TYPE,
+            location
         );
-        final var woverType = new WoverPoiType(key, type, matchingStates, maxTickets, validRanges);
+        PoiType type = PoiTypes.register(
+            BuiltInRegistries.POINT_OF_INTEREST_TYPE,
+            key,
+            matchingStates,
+            maxTickets,
+            validRanges
+        );
+        final var woverType = new WoverPoiType(
+            key,
+            type,
+            matchingStates,
+            maxTickets,
+            validRanges
+        );
         if (tag != null) woverType.setTag(tag);
         return woverType;
     }
@@ -64,52 +72,94 @@ public class PoiManagerImpl {
 
     @ApiStatus.Internal
     public static void registerAll() {
-        PoiManagerImpl.setTag(PoiTypes.ARMORER, CommonPoiTags.ARMORER_WORKSTATION);
-        PoiManagerImpl.setTag(PoiTypes.BUTCHER, CommonPoiTags.BUTCHER_WORKSTATION);
-        PoiManagerImpl.setTag(PoiTypes.CARTOGRAPHER, CommonPoiTags.CARTOGRAPHER_WORKSTATION);
-        PoiManagerImpl.setTag(PoiTypes.CLERIC, CommonPoiTags.CLERIC_WORKSTATION);
-        PoiManagerImpl.setTag(PoiTypes.FARMER, CommonPoiTags.FARMER_WORKSTATION);
-        PoiManagerImpl.setTag(PoiTypes.FISHERMAN, CommonPoiTags.FISHERMAN_WORKSTATION);
-        PoiManagerImpl.setTag(PoiTypes.FLETCHER, CommonPoiTags.FLETCHER_WORKSTATION);
-        PoiManagerImpl.setTag(PoiTypes.LEATHERWORKER, CommonPoiTags.LEATHERWORKER_WORKSTATION);
-        PoiManagerImpl.setTag(PoiTypes.LIBRARIAN, CommonPoiTags.LIBRARIAN_WORKSTATION);
+        PoiManagerImpl.setTag(
+            PoiTypes.ARMORER,
+            CommonPoiTags.ARMORER_WORKSTATION
+        );
+        PoiManagerImpl.setTag(
+            PoiTypes.BUTCHER,
+            CommonPoiTags.BUTCHER_WORKSTATION
+        );
+        PoiManagerImpl.setTag(
+            PoiTypes.CARTOGRAPHER,
+            CommonPoiTags.CARTOGRAPHER_WORKSTATION
+        );
+        PoiManagerImpl.setTag(
+            PoiTypes.CLERIC,
+            CommonPoiTags.CLERIC_WORKSTATION
+        );
+        PoiManagerImpl.setTag(
+            PoiTypes.FARMER,
+            CommonPoiTags.FARMER_WORKSTATION
+        );
+        PoiManagerImpl.setTag(
+            PoiTypes.FISHERMAN,
+            CommonPoiTags.FISHERMAN_WORKSTATION
+        );
+        PoiManagerImpl.setTag(
+            PoiTypes.FLETCHER,
+            CommonPoiTags.FLETCHER_WORKSTATION
+        );
+        PoiManagerImpl.setTag(
+            PoiTypes.LEATHERWORKER,
+            CommonPoiTags.LEATHERWORKER_WORKSTATION
+        );
+        PoiManagerImpl.setTag(
+            PoiTypes.LIBRARIAN,
+            CommonPoiTags.LIBRARIAN_WORKSTATION
+        );
         PoiManagerImpl.setTag(PoiTypes.MASON, CommonPoiTags.MASON_WORKSTATION);
-        PoiManagerImpl.setTag(PoiTypes.SHEPHERD, CommonPoiTags.SHEPHERD_WORKSTATION);
-        PoiManagerImpl.setTag(PoiTypes.TOOLSMITH, CommonPoiTags.TOOLSMITH_WORKSTATION);
-        PoiManagerImpl.setTag(PoiTypes.WEAPONSMITH, CommonPoiTags.WEAPONSMITH_WORKSTATION);
+        PoiManagerImpl.setTag(
+            PoiTypes.SHEPHERD,
+            CommonPoiTags.SHEPHERD_WORKSTATION
+        );
+        PoiManagerImpl.setTag(
+            PoiTypes.TOOLSMITH,
+            CommonPoiTags.TOOLSMITH_WORKSTATION
+        );
+        PoiManagerImpl.setTag(
+            PoiTypes.WEAPONSMITH,
+            CommonPoiTags.WEAPONSMITH_WORKSTATION
+        );
 
         PoiManagerImpl.setTag(PoiTypes.HOME, CommonPoiTags.HOME);
         PoiManagerImpl.setTag(PoiTypes.MEETING, CommonPoiTags.MEETING_PLACE);
         PoiManagerImpl.setTag(PoiTypes.BEEHIVE, CommonPoiTags.BEEHIVE);
         PoiManagerImpl.setTag(PoiTypes.BEE_NEST, CommonPoiTags.BEE_NEST);
-        PoiManagerImpl.setTag(PoiTypes.NETHER_PORTAL, CommonPoiTags.NETHER_PORTAL);
+        PoiManagerImpl.setTag(
+            PoiTypes.NETHER_PORTAL,
+            CommonPoiTags.NETHER_PORTAL
+        );
         PoiManagerImpl.setTag(PoiTypes.LODESTONE, CommonPoiTags.LODESTONE);
-        PoiManagerImpl.setTag(PoiTypes.LIGHTNING_ROD, CommonPoiTags.LIGHTNING_ROD);
+        PoiManagerImpl.setTag(
+            PoiTypes.LIGHTNING_ROD,
+            CommonPoiTags.LIGHTNING_ROD
+        );
 
         WorldLifecycle.BEFORE_CREATING_LEVELS.subscribe(
-                PoiManagerImpl::finalizedWorldLoad,
-                EventImpl.SYSTEM_PRIORITY - 1
+            PoiManagerImpl::finalizedWorldLoad,
+            EventImpl.SYSTEM_PRIORITY - 1
         );
     }
 
     private static void finalizedWorldLoad(
-            LevelStorageSource.LevelStorageAccess levelStorageAccess,
-            PackRepository packRepository,
-            LayeredRegistryAccess<RegistryLayer> registryLayerLayeredRegistryAccess,
-            WorldData worldData
+        LevelStorageSource.LevelStorageAccess levelStorageAccess,
+        PackRepository packRepository,
+        LayeredRegistryAccess<RegistryLayer> registryLayerLayeredRegistryAccess,
+        WorldData worldData
     ) {
         PoiManagerImpl.updateStates();
     }
 
-
-    private static final List<Holder<PoiType>> TYPES_WITH_TAGS = new ArrayList<>(20);
-    private static Map<BlockState, Holder<PoiType>> ORIGINAL_BLOCK_STATES = null;
+    private static final List<Holder<PoiType>> TYPES_WITH_TAGS =
+        new ArrayList<>(20);
+    private static Map<BlockState, Holder<PoiType>> ORIGINAL_BLOCK_STATES =
+        null;
 
     private static void didAddTagFor(Holder<PoiType> type, TagKey<Block> tag) {
         TYPES_WITH_TAGS.remove(type);
         if (tag != null) TYPES_WITH_TAGS.add(type);
     }
-
 
     @ApiStatus.Internal
     public static void updateStates() {
@@ -126,9 +176,14 @@ public class PoiManagerImpl {
             if ((Object) type.value() instanceof PoiTypeExtension ex) {
                 TagKey<Block> tag = ex.wover_getTag();
                 if (tag != null) {
-                    var registry = WorldState.registryAccess().lookupOrThrow(tag.registry());
+                    var registry = WorldState.registryAccess().lookupOrThrow(
+                        tag.registry()
+                    );
                     for (var block : registry.getTagOrEmpty(tag)) {
-                        for (var state : block.value().getStateDefinition().getPossibleStates()) {
+                        for (var state : block
+                            .value()
+                            .getStateDefinition()
+                            .getPossibleStates()) {
                             PoiTypes.TYPE_BY_STATE.put(state, type);
                         }
                     }

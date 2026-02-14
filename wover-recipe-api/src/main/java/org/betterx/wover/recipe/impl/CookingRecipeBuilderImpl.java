@@ -7,7 +7,7 @@ import org.betterx.wover.recipe.api.RecipeMaterial;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -22,7 +22,7 @@ public class CookingRecipeBuilderImpl extends BaseRecipeBuilderImpl<CookingRecip
     protected boolean blasting, campfire, smoker, smelting;
 
     public CookingRecipeBuilderImpl(
-            ResourceLocation id,
+            Identifier id,
             ItemLike output,
             boolean blasting,
             boolean campfire,
@@ -215,7 +215,7 @@ public class CookingRecipeBuilderImpl extends BaseRecipeBuilderImpl<CookingRecip
             String suffix,
             SimpleCookingRecipeBuilder builder
     ) {
-        ResourceLocation loc = key.location().withSuffix("_" + suffix);
+        Identifier loc = key.location().withSuffix("_" + suffix);
 
         for (var item : unlocks.entrySet()) {
             builder.unlockedBy(item.getKey(), item.getValue().createCriterion(context));

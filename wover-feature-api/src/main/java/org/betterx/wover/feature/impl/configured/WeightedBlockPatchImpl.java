@@ -1,23 +1,28 @@
 package org.betterx.wover.feature.impl.configured;
 
-import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
-import org.betterx.wover.feature.api.configured.ConfiguredFeatureManager;
-import org.betterx.wover.feature.api.configured.configurators.WeightedBlockPatch;
-
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.RandomPatchFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.RandomPatchConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStateProvider;
-
+import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
+import org.betterx.wover.feature.api.configured.ConfiguredFeatureManager;
+import org.betterx.wover.feature.api.configured.configurators.WeightedBlockPatch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class WeightedBlockPatchImpl extends WeightedBaseBlockImpl<RandomPatchConfiguration, RandomPatchFeature, WeightedBlockPatch> implements WeightedBlockPatch {
+public class WeightedBlockPatchImpl
+    extends WeightedBaseBlockImpl<
+        RandomPatchConfiguration,
+        RandomPatchFeature,
+        WeightedBlockPatch
+    >
+    implements WeightedBlockPatch
+{
 
     private BlockPredicate groundType = null;
     private boolean isEmpty = true;
@@ -26,12 +31,11 @@ public class WeightedBlockPatchImpl extends WeightedBaseBlockImpl<RandomPatchCon
     private int ySpread = 3;
 
     WeightedBlockPatchImpl(
-            @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
-            @Nullable ResourceKey<ConfiguredFeature<?, ?>> key
+        @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
+        @Nullable ResourceKey<ConfiguredFeature<?, ?>> key
     ) {
         super(ctx, key);
     }
-
 
     @Override
     public WeightedBlockPatch isEmpty() {
@@ -61,13 +65,15 @@ public class WeightedBlockPatchImpl extends WeightedBaseBlockImpl<RandomPatchCon
     }
 
     @Override
-    public WeightedBlockPatch likeDefaultNetherVegetation(int xzSpread, int ySpread) {
+    public WeightedBlockPatch likeDefaultNetherVegetation(
+        int xzSpread,
+        int ySpread
+    ) {
         this.xzSpread = xzSpread;
         this.ySpread = ySpread;
         tries = xzSpread * xzSpread;
         return this;
     }
-
 
     @Override
     public WeightedBlockPatch tries(int v) {
@@ -89,16 +95,19 @@ public class WeightedBlockPatchImpl extends WeightedBaseBlockImpl<RandomPatchCon
 
     @Override
     public @NotNull RandomPatchConfiguration createConfiguration() {
-        var blockFeature = ConfiguredFeatureManager
-                .INLINE_BUILDER
-                .simple()
-                .block((new WeightedStateProvider(stateBuilder.build())))
-                .inlinePlace();
+        var blockFeature = ConfiguredFeatureManager.INLINE_BUILDER.simple()
+            .block((new WeightedStateProvider(stateBuilder.build())))
+            .inlinePlace();
 
         if (isEmpty) blockFeature.isEmpty();
         if (groundType != null) blockFeature.isOn(groundType);
 
-        return new RandomPatchConfiguration(tries, xzSpread, ySpread, blockFeature.directHolder());
+        return new RandomPatchConfiguration(
+            tries,
+            xzSpread,
+            ySpread,
+            blockFeature.directHolder()
+        );
     }
 
     @Override
@@ -106,25 +115,32 @@ public class WeightedBlockPatchImpl extends WeightedBaseBlockImpl<RandomPatchCon
         return (RandomPatchFeature) Feature.RANDOM_PATCH;
     }
 
-
     public static class Key extends ConfiguredFeatureKey<WeightedBlockPatch> {
-        public Key(ResourceLocation id) {
+
+        public Key(Identifier id) {
             super(id);
         }
 
         @Override
-        public WeightedBlockPatch bootstrap(@NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx) {
+        public WeightedBlockPatch bootstrap(
+            @NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx
+        ) {
             return new WeightedBlockPatchImpl(ctx, key);
         }
     }
 
-    public static class KeyBonemeal extends ConfiguredFeatureKey<WeightedBlockPatch> {
-        public KeyBonemeal(ResourceLocation id) {
+    public static class KeyBonemeal
+        extends ConfiguredFeatureKey<WeightedBlockPatch>
+    {
+
+        public KeyBonemeal(Identifier id) {
             super(id);
         }
 
         @Override
-        public WeightedBlockPatch bootstrap(@NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx) {
+        public WeightedBlockPatch bootstrap(
+            @NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx
+        ) {
             return new WeightedBlockPatchImpl(ctx, key).likeDefaultBonemeal();
         }
     }

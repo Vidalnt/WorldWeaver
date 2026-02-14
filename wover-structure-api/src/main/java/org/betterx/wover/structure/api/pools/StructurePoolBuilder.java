@@ -1,17 +1,15 @@
 package org.betterx.wover.structure.api.pools;
 
-import org.betterx.wover.structure.api.processors.StructureProcessorKey;
-
+import java.util.function.Function;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
-
-import java.util.function.Function;
+import org.betterx.wover.structure.api.processors.StructureProcessorKey;
 import org.jetbrains.annotations.NotNull;
 
 public interface StructurePoolBuilder {
@@ -40,24 +38,39 @@ public interface StructurePoolBuilder {
 
     @NotNull
     StructurePoolBuilder add(
-            @NotNull Function<StructureTemplatePool.Projection, ? extends StructurePoolElement> element,
-            int weight
+        @NotNull Function<
+            StructureTemplatePool.Projection,
+            ? extends StructurePoolElement
+        > element,
+        int weight
     );
 
     @NotNull
-    StructurePoolBuilder addFeature(@NotNull ResourceKey<PlacedFeature> feature, int weight);
+    StructurePoolBuilder addFeature(
+        @NotNull ResourceKey<PlacedFeature> feature,
+        int weight
+    );
 
     @NotNull
-    StructurePoolBuilder addFeature(@NotNull Holder<PlacedFeature> feature, int weight);
+    StructurePoolBuilder addFeature(
+        @NotNull Holder<PlacedFeature> feature,
+        int weight
+    );
 
     @NotNull
-    StructurePoolBuilder projection(@NotNull StructureTemplatePool.Projection projection);
+    StructurePoolBuilder projection(
+        @NotNull StructureTemplatePool.Projection projection
+    );
 
     @NotNull
-    StructurePoolBuilder terminator(@NotNull Holder<StructureTemplatePool> terminator);
+    StructurePoolBuilder terminator(
+        @NotNull Holder<StructureTemplatePool> terminator
+    );
 
     @NotNull
-    StructurePoolBuilder terminator(@NotNull ResourceKey<StructureTemplatePool> terminator);
+    StructurePoolBuilder terminator(
+        @NotNull ResourceKey<StructureTemplatePool> terminator
+    );
 
     @NotNull
     StructurePoolBuilder terminator(@NotNull StructurePoolKey terminator);
@@ -66,21 +79,31 @@ public interface StructurePoolBuilder {
     StructurePoolBuilder emptyTerminator();
 
     @NotNull
-    ElementBuilder startSingle(@NotNull ResourceLocation nbtLocation);
+    ElementBuilder startSingle(@NotNull Identifier nbtLocation);
+
     @NotNull
-    ElementBuilder startSingleEnd(@NotNull ResourceLocation nbtLocation);
+    ElementBuilder startSingleEnd(@NotNull Identifier nbtLocation);
+
     @NotNull
-    ElementBuilder startLegacySingle(@NotNull ResourceLocation nbtLocation);
+    ElementBuilder startLegacySingle(@NotNull Identifier nbtLocation);
+
     @NotNull
     StructurePoolBuilder addEmptyElement(int weight);
 
     interface ElementBuilder {
         @NotNull
-        ElementBuilder processor(@NotNull Holder<StructureProcessorList> processor);
+        ElementBuilder processor(
+            @NotNull Holder<StructureProcessorList> processor
+        );
+
         @NotNull
-        ElementBuilder processor(@NotNull ResourceKey<StructureProcessorList> processor);
+        ElementBuilder processor(
+            @NotNull ResourceKey<StructureProcessorList> processor
+        );
+
         @NotNull
         ElementBuilder processor(@NotNull StructureProcessorKey processor);
+
         @NotNull
         ElementBuilder emptyProcessor();
 

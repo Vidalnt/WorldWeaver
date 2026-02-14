@@ -1,5 +1,23 @@
 package org.betterx.wover.biome.impl.modification;
 
+import static org.betterx.wover.events.impl.AbstractEvent.SYSTEM_PRIORITY;
+
+import com.google.common.base.Stopwatch;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.WorldStem;
+import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.storage.LevelStorageSource;
 import org.betterx.wover.biome.api.modification.BiomeModification;
 import org.betterx.wover.biome.api.modification.BiomeModificationRegistry;
 import org.betterx.wover.biome.api.modification.predicates.BiomePredicate;
@@ -9,33 +27,17 @@ import org.betterx.wover.core.api.registry.DatapackRegistryBuilder;
 import org.betterx.wover.entrypoint.LibWoverBiome;
 import org.betterx.wover.events.api.WorldLifecycle;
 import org.betterx.wover.events.api.types.OnBootstrapRegistry;
-import static org.betterx.wover.events.impl.AbstractEvent.SYSTEM_PRIORITY;
 import org.betterx.wover.events.impl.EventImpl;
 import org.betterx.wover.state.api.WorldState;
-
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.WorldStem;
-import net.minecraft.server.packs.repository.PackRepository;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.storage.LevelStorageSource;
-
-import com.google.common.base.Stopwatch;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
 import org.jetbrains.annotations.ApiStatus;
 
 public class BiomeModificationRegistryImpl {
-    public static final EventImpl<OnBootstrapRegistry<BiomeModification>> BOOTSTRAP_BIOME_MODIFICATION_REGISTRY
-            = new EventImpl<>("BOOTSTRAP_BIOME_MODIFICATION_REGISTRY");
+
+    public static final EventImpl<
+        OnBootstrapRegistry<BiomeModification>
+    > BOOTSTRAP_BIOME_MODIFICATION_REGISTRY = new EventImpl<>(
+        "BOOTSTRAP_BIOME_MODIFICATION_REGISTRY"
+    );
 
     private static boolean didInit = false;
 
@@ -45,12 +47,15 @@ public class BiomeModificationRegistryImpl {
         didInit = true;
 
         DatapackRegistryBuilder.register(
-                BiomeModificationRegistry.BIOME_MODIFICATION_REGISTRY,
-                BiomeModification.CODEC,
-                BiomeModificationRegistryImpl::onBootstrap
+            BiomeModificationRegistry.BIOME_MODIFICATION_REGISTRY,
+            BiomeModification.CODEC,
+            BiomeModificationRegistryImpl::onBootstrap
         );
 
-        WorldLifecycle.MINECRAFT_SERVER_READY.subscribe(BiomeModificationRegistryImpl::whenReady, SYSTEM_PRIORITY);
+        WorldLifecycle.MINECRAFT_SERVER_READY.subscribe(
+            BiomeModificationRegistryImpl::whenReady,
+            SYSTEM_PRIORITY
+        );
     }
 
     private static void onBootstrap(BootstrapContext<BiomeModification> ctx) {
@@ -62,31 +67,42 @@ public class BiomeModificationRegistryImpl {
     // from a Datapack backed Registry.
     // The current Fabric API implementation is not suitable for this.
     private static void whenReady(
-            LevelStorageSource.LevelStorageAccess storageSource,
-            PackRepository packRepository,
-            WorldStem worldStem
+        LevelStorageSource.LevelStorageAccess storageSource,
+        PackRepository packRepository,
+        WorldStem worldStem
     ) {
         final Stopwatch sw = Stopwatch.createStarted();
 
         final RegistryAccess registryAccess = WorldState.registryAccess();
         final Registry<BiomeModification> modifications = registryAccess
-                .lookup(BiomeModificationRegistry.BIOME_MODIFICATION_REGISTRY)
-                .orElse(null);
+            .lookup(BiomeModificationRegistry.BIOME_MODIFICATION_REGISTRY)
+            .orElse(null);
         if (modifications == null) {
-            LibWoverBiome.C.log.error("Biome Modification Registry is missing. Cannot apply Biome Modifications.");
+            LibWoverBiome.C.log.error(
+                "Biome Modification Registry is missing. Cannot apply Biome Modifications."
+            );
             return;
         }
-        final Registry<Biome> biomes = registryAccess.lookupOrThrow(Registries.BIOME);
+        final Registry<Biome> biomes = registryAccess.lookupOrThrow(
+            Registries.BIOME
+        );
 
         final List<ResourceKey<Biome>> keys = biomes
-                .entrySet()
-                .stream()
-                .map(Map.Entry::getKey)
-                .sorted(Comparator.comparingInt(key -> biomes.getId(biomes.getOrThrow(key).value())))
-                .toList();
+            .entrySet()
+            .stream()
+            .map(Map.Entry::getKey)
+            .sorted(
+                Comparator.comparingInt(key ->
+                    biomes.getId(biomes.getOrThrow(key).value())
+                )
+            )
+            .toList();
 
-        final BiomeTagModificationWorker biomeTagWorker = new BiomeTagModificationWorker();
-        final List<BiomeModification> biomeModifications = modifications.stream().toList();
+        final BiomeTagModificationWorker biomeTagWorker =
+            new BiomeTagModificationWorker();
+        final List<BiomeModification> biomeModifications = modifications
+            .stream()
+            .toList();
 
         int biomesChanged = 0;
         int biomesProcessed = 0;
@@ -94,9 +110,15 @@ public class BiomeModificationRegistryImpl {
         int tagsAdded = 0;
 
         for (ResourceKey<Biome> biomeKey : keys) {
-            BiomePredicate.Context context = BiomePredicate.Context.of(registryAccess, biomeKey);
+            BiomePredicate.Context context = BiomePredicate.Context.of(
+                registryAccess,
+                biomeKey
+            );
             if (context == null) {
-                LibWoverBiome.C.log.warn("Failed to get biome context for {}", biomeKey.location());
+                LibWoverBiome.C.log.warn(
+                    "Failed to get biome context for {}",
+                    biomeKey.location()
+                );
                 continue;
             }
 
@@ -107,7 +129,10 @@ public class BiomeModificationRegistryImpl {
             for (BiomeModification modification : biomeModifications) {
                 if (modification.predicate().test(context)) {
                     if (worker == null) {
-                        worker = new GenerationSettingsWorker(registryAccess, context.biome);
+                        worker = new GenerationSettingsWorker(
+                            registryAccess,
+                            context.biome
+                        );
                     }
                     if (mobWorker == null) {
                         mobWorker = new MobSettingsWorker(context.biome);
@@ -150,9 +175,14 @@ public class BiomeModificationRegistryImpl {
 
         if (tagsAdded > 0) {
             //We need to reload all BiomeSources, as some tags have changed
-            final Registry<LevelStem> dimensions = registryAccess.lookupOrThrow(Registries.LEVEL_STEM);
+            final Registry<LevelStem> dimensions = registryAccess.lookupOrThrow(
+                Registries.LEVEL_STEM
+            );
             dimensions.forEach(stem -> {
-                if (stem.generator().getBiomeSource() instanceof ReloadableBiomeSource reloadable) {
+                if (
+                    stem.generator().getBiomeSource() instanceof
+                        ReloadableBiomeSource reloadable
+                ) {
                     reloadable.reloadBiomes();
                 }
             });
@@ -161,30 +191,35 @@ public class BiomeModificationRegistryImpl {
         if (biomesProcessed > 0) {
             //We need to rebuild all feature maps, as we might have added feature that did not yet exist on any
             //of the valid biomes
-            final Registry<LevelStem> dimensions = registryAccess.lookupOrThrow(Registries.LEVEL_STEM);
+            final Registry<LevelStem> dimensions = registryAccess.lookupOrThrow(
+                Registries.LEVEL_STEM
+            );
             dimensions.forEach(stem -> {
-                if (stem.generator() instanceof RebuildableFeaturesPerStep<?> generator) {
+                if (
+                    stem.generator() instanceof
+                        RebuildableFeaturesPerStep<?> generator
+                ) {
                     generator.wover_rebuildFeaturesPerStep();
                 }
             });
 
             LibWoverBiome.C.log.info(
-                    "Applied {} biome modifications and added {} tags to {} of {} biomes in {}",
-                    modifiersApplied,
-                    tagsAdded,
-                    biomesChanged,
-                    biomesProcessed,
-                    sw.stop()
+                "Applied {} biome modifications and added {} tags to {} of {} biomes in {}",
+                modifiersApplied,
+                tagsAdded,
+                biomesChanged,
+                biomesProcessed,
+                sw.stop()
             );
         }
     }
 
     public static ResourceKey<BiomeModification> createKey(
-            ResourceLocation modificationID
+        Identifier modificationID
     ) {
         return ResourceKey.create(
-                BiomeModificationRegistry.BIOME_MODIFICATION_REGISTRY,
-                modificationID
+            BiomeModificationRegistry.BIOME_MODIFICATION_REGISTRY,
+            modificationID
         );
     }
 }

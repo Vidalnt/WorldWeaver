@@ -1,29 +1,32 @@
 package org.betterx.wover.feature.api.configured.configurators;
 
+import net.minecraft.resources.Identifier;
 import org.betterx.wover.feature.api.features.TemplateFeature;
 import org.betterx.wover.feature.api.features.config.TemplateFeatureConfig;
-
-import net.minecraft.resources.ResourceLocation;
 
 /**
  * Places a random structure template ({@link TemplateFeature}).
  * <p>
- * The Configurator accepts  {@link ResourceLocation}s of the templates to place. Templates
+ * The Configurator accepts  {@link Identifier}s of the templates to place. Templates
  * are chosen randomly bases on their weight. The weight is relative to the sum of all weights.
  * Templates are loaded from datapacks at {@code data/<namespace>/structure/<path>.nbt}.
  */
-public interface WithTemplates extends FeatureConfigurator<TemplateFeatureConfig, TemplateFeature<TemplateFeatureConfig>> {
+public interface WithTemplates
+    extends
+        FeatureConfigurator<
+            TemplateFeatureConfig,
+            TemplateFeature<TemplateFeatureConfig>
+        >
+{
     /**
      * Adds a template to the random selection with a weight of 1.
      * <p>
-     * This is a convenience method for {@link #add(ResourceLocation, float)}.
+     * This is a convenience method for {@link #add(Identifier, float)}.
      *
      * @param location The location of the template to add
      * @return the same instance
      */
-    WithTemplates add(
-            ResourceLocation location
-    );
+    WithTemplates add(Identifier location);
 
     /**
      * Adds a template to the random selection with given weight.
@@ -32,10 +35,7 @@ public interface WithTemplates extends FeatureConfigurator<TemplateFeatureConfig
      * @param weight   The weight of the template
      * @return the same instance
      */
-    WithTemplates add(
-            ResourceLocation location,
-            float weight
-    );
+    WithTemplates add(Identifier location, float weight);
 
     /**
      * Adds a template to the random selection with given weight and offset.
@@ -50,9 +50,5 @@ public interface WithTemplates extends FeatureConfigurator<TemplateFeatureConfig
      * @return the same instance
      * @see TemplateFeatureConfig.FeatureTemplate#getOffsetY()
      */
-    WithTemplates add(
-            ResourceLocation location,
-            int offsetY,
-            float weight
-    );
+    WithTemplates add(Identifier location, int offsetY, float weight);
 }

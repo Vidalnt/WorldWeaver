@@ -1,13 +1,11 @@
 package org.betterx.wover.datagen.api.provider;
 
-import org.betterx.wover.core.api.ModCore;
-import org.betterx.wover.datagen.api.WoverRegistryContentProvider;
-
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.biome.Biome;
-
+import org.betterx.wover.core.api.ModCore;
+import org.betterx.wover.datagen.api.WoverRegistryContentProvider;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -15,15 +13,16 @@ import org.jetbrains.annotations.NotNull;
  * will only supply Biomes for the Biome Registry. If you want to supply
  * all Biome related things, use {@code WoverBiomeProvider} from the wover-biome-api.
  */
-public abstract class WoverBiomeOnlyProvider extends WoverRegistryContentProvider<Biome> {
+public abstract class WoverBiomeOnlyProvider
+    extends WoverRegistryContentProvider<Biome>
+{
+
     /**
      * Creates a new instance of {@link WoverRegistryContentProvider}.
      *
      * @param modCore The ModCore instance of the Mod that is providing this instance.
      */
-    public WoverBiomeOnlyProvider(
-            @NotNull ModCore modCore
-    ) {
+    public WoverBiomeOnlyProvider(@NotNull ModCore modCore) {
         this(modCore, modCore.id("default"));
     }
 
@@ -35,8 +34,8 @@ public abstract class WoverBiomeOnlyProvider extends WoverRegistryContentProvide
      *                   needs a unique id.
      */
     public WoverBiomeOnlyProvider(
-            @NotNull ModCore modCore,
-            @NotNull ResourceLocation providerId
+        @NotNull ModCore modCore,
+        @NotNull Identifier providerId
     ) {
         super(modCore, providerId.toString() + " (Biome)", Registries.BIOME);
     }

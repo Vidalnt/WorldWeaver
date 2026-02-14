@@ -1,5 +1,12 @@
 package org.betterx.wover.tag.impl;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
+import net.minecraft.core.DefaultedRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 import org.betterx.wover.core.api.ModCore;
 import org.betterx.wover.entrypoint.LibWoverTag;
 import org.betterx.wover.events.api.Event;
@@ -7,18 +14,13 @@ import org.betterx.wover.events.impl.EventImpl;
 import org.betterx.wover.tag.api.TagRegistry;
 import org.betterx.wover.tag.api.event.OnBoostrapTags;
 import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
-
-import net.minecraft.core.DefaultedRegistry;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
-
-import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class TagRegistryImpl<T, P extends TagBootstrapContext<T>> implements TagRegistry<T, P> {
+public abstract class TagRegistryImpl<
+    T,
+    P extends TagBootstrapContext<T>
+> implements TagRegistry<T, P> {
+
     private final ResourceKey<? extends Registry<T>> registryKey;
     final ConcurrentLinkedQueue<TagKey<T>> tags = new ConcurrentLinkedQueue<>();
     final @Nullable LocationProvider<T> locationProvider;
@@ -27,15 +29,17 @@ public abstract class TagRegistryImpl<T, P extends TagBootstrapContext<T>> imple
     private final EventImpl<OnBoostrapTags<T, P>> BOOTSTRAP_EVENT;
 
     protected TagRegistryImpl(
-            ResourceKey<? extends Registry<T>> registryKey,
-            String directory,
-            LocationProvider<T> locationProvider
+        ResourceKey<? extends Registry<T>> registryKey,
+        String directory,
+        LocationProvider<T> locationProvider
     ) {
         this.registryKey = registryKey;
         this.directory = directory;
         this.locationProvider = locationProvider;
 
-        BOOTSTRAP_EVENT = new EventImpl<>("TAG_BOOTSTRAP_EVENT (" + directory + ")");
+        BOOTSTRAP_EVENT = new EventImpl<>(
+            "TAG_BOOTSTRAP_EVENT (" + directory + ")"
+        );
     }
 
     public TagKey<T> makeWorldWeaverTag(String name) {
@@ -43,18 +47,18 @@ public abstract class TagRegistryImpl<T, P extends TagBootstrapContext<T>> imple
     }
 
     public TagKey<T> makeCommonTag(String name) {
-        return makeTag(ResourceLocation.fromNamespaceAndPath("c", name));
+        return makeTag(Identifier.fromNamespaceAndPath("c", name));
     }
 
     public TagKey<T> makeFabricTag(String name) {
-        return makeTag(ResourceLocation.fromNamespaceAndPath("fabric", name));
+        return makeTag(Identifier.fromNamespaceAndPath("fabric", name));
     }
 
     public TagKey<T> makeTag(ModCore mod, String name) {
         return makeTag(mod.id(name));
     }
 
-    public TagKey<T> makeTag(ResourceLocation id) {
+    public TagKey<T> makeTag(Identifier id) {
         final TagKey<T> tag = TagKey.create(registryKey, id);
         initializeTag(tag);
         return tag;
@@ -74,11 +78,17 @@ public abstract class TagRegistryImpl<T, P extends TagBootstrapContext<T>> imple
         for (var entry : tags) {
             b.append("  - ").append(entry).append(" \n");
         }
-        return "TagRegistry{" +
-                "registryKey=" + registryKey +
-                ", directory='" + directory + '\'' +
-                ", tagElements=\n" + b.toString() +
-                '}';
+        return (
+            "TagRegistry{" +
+            "registryKey=" +
+            registryKey +
+            ", directory='" +
+            directory +
+            '\'' +
+            ", tagElements=\n" +
+            b.toString() +
+            '}'
+        );
     }
 
     public ResourceKey<? extends Registry<T>> registryKey() {
@@ -97,26 +107,30 @@ public abstract class TagRegistryImpl<T, P extends TagBootstrapContext<T>> imple
         return ctx;
     }
 
-    public static abstract class WithRegistry<T, P extends TagBootstrapContext<T>> extends TagRegistryImpl<T, P> {
+    public abstract static class WithRegistry<
+        T,
+        P extends TagBootstrapContext<T>
+    > extends TagRegistryImpl<T, P> {
+
         private final DefaultedRegistry<T> registry;
 
         public WithRegistry(DefaultedRegistry<T> registry) {
             super(
-                    registry.key(),
-                    Registries.tagsDirPath(registry.key()),
-                    (T element) -> {
-                        ResourceLocation id = registry.getKey(element);
-                        if (id != registry.getDefaultKey()) {
-                            return id;
-                        }
-                        return null;
+                registry.key(),
+                Registries.tagsDirPath(registry.key()),
+                (T element) -> {
+                    Identifier id = registry.getKey(element);
+                    if (id != registry.getDefaultKey()) {
+                        return id;
                     }
+                    return null;
+                }
             );
             this.registry = registry;
         }
 
         @Override
-        public TagKey<T> makeTag(ResourceLocation id) {
+        public TagKey<T> makeTag(Identifier id) {
             TagKey<T> tag = TagKey.create(registry.key(), id);
 
             initializeTag(tag);

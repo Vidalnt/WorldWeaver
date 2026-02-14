@@ -6,7 +6,7 @@ import org.betterx.wover.recipe.api.RecipeMaterial;
 
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +27,7 @@ public class CraftingRecipeBuilderImpl extends BaseRecipeBuilderImpl<CraftingRec
     protected boolean showNotification;
     protected final Map<Character, IngredientFactory> materials;
 
-    public CraftingRecipeBuilderImpl(ResourceLocation id, ItemLike output) {
+    public CraftingRecipeBuilderImpl(Identifier id, ItemLike output) {
         super(id, output);
         this.showNotification = true;
         this.materials = new HashMap<>();

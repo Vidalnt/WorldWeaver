@@ -1,19 +1,15 @@
 package org.betterx.wover.core.api;
 
 import de.ambertation.wunderlib.utils.Version;
-
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-
+import java.util.*;
+import java.util.stream.Stream;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-
-import java.util.*;
-import java.util.stream.Stream;
-
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 
 /**
  * This class is used to identify your mod and provide some helpfull utilities
@@ -24,9 +20,10 @@ import java.util.stream.Stream;
  * {@link net.fabricmc.api.ModInitializer}).
  */
 public final class ModCore implements Version.ModVersionProvider {
+
     private static final HashMap<String, ModCore> cache = new HashMap<>();
 
-    private final List<ResourceLocation> providedDatapacks = new LinkedList<>();
+    private final List<Identifier> providedDatapacks = new LinkedList<>();
     /**
      * This logger is used to write text to the console and the log file.
      * The mod id is used as the logger's name, making it clear which mod wrote info,
@@ -54,17 +51,18 @@ public final class ModCore implements Version.ModVersionProvider {
         modId = modID;
         this.namespace = namespace;
 
-        Optional<ModContainer> optional = FabricLoader.getInstance().getModContainer(modId);
+        Optional<ModContainer> optional =
+            FabricLoader.getInstance().getModContainer(modId);
         if (optional.isPresent()) {
             this.modContainer = optional.get();
-            modVersion = new Version(modContainer.getMetadata().getVersion().toString());
+            modVersion = new Version(
+                modContainer.getMetadata().getVersion().toString()
+            );
         } else {
             this.modContainer = null;
             modVersion = new Version(0, 0, 0);
-            ;
         }
     }
-
 
     /**
      * Returns the {@link Version} of this mod.
@@ -96,47 +94,46 @@ public final class ModCore implements Version.ModVersionProvider {
     }
 
     /**
-     * Returns the {@link ResourceLocation} for the given name in the namespace of this mod.
+     * Returns the {@link Identifier} for the given name in the namespace of this mod.
      * <p>
-     * You should always prefer this method over {@link ResourceLocation#fromNamespaceAndPath(String, String)}.
+     * You should always prefer this method over {@link Identifier#fromNamespaceAndPath(String, String)}.
      *
      * @param name The name or path of the resource.
-     * @return The {@link ResourceLocation} for the given name.
+     * @return The {@link Identifier} for the given name.
      */
-    public ResourceLocation id(String name) {
-        return ResourceLocation.fromNamespaceAndPath(namespace, name);
+    public Identifier id(String name) {
+        return Identifier.fromNamespaceAndPath(namespace, name);
     }
 
-
     /**
-     * Returns the {@link ResourceLocation} for the given path in the namespace of this mod.
+     * Returns the {@link Identifier} for the given path in the namespace of this mod.
      *
-     * @param location The {@link ResourceLocation} to convert.
-     * @return The {@link ResourceLocation} for the given path in the namespace of this Mod.
+     * @param location The {@link Identifier} to convert.
+     * @return The {@link Identifier} for the given path in the namespace of this Mod.
      */
-    public ResourceLocation convertNamespace(ResourceLocation location) {
+    public Identifier convertNamespace(Identifier location) {
         return id(location.getPath());
     }
 
     /**
-     * Returns the {@link ResourceLocation} for the given path in the namespace of this mod.
+     * Returns the {@link Identifier} for the given path in the namespace of this mod.
      *
      * @param key The {@link ResourceKey} to convert.
-     * @return The {@link ResourceLocation} for the given path in the namespace of this Mod.
+     * @return The {@link Identifier} for the given path in the namespace of this Mod.
      */
-    public <T> ResourceLocation convertNamespace(ResourceKey<T> key) {
-        return convertNamespace(key.location());
+    public <T> Identifier convertNamespace(ResourceKey<T> key) {
+        return convertNamespace(key.identifier());
     }
 
     /**
      * alias for {@link #id(String)}
      *
      * @param key The name or path of the resource.
-     * @return The {@link ResourceLocation} for the given name.
+     * @return The {@link Identifier} for the given name.
      */
     @Override
-    public ResourceLocation mk(String key) {
-        return ResourceLocation.fromNamespaceAndPath(namespace, key);
+    public Identifier mk(String key) {
+        return Identifier.fromNamespaceAndPath(namespace, key);
     }
 
     /**
@@ -149,53 +146,62 @@ public final class ModCore implements Version.ModVersionProvider {
     }
 
     /**
-     * Returns a stream of all Datapacks {@link ResourceLocation}s that are provided by this mod.
+     * Returns a stream of all Datapacks {@link Identifier}s that are provided by this mod.
      *
-     * @return a stream of all Datapacks {@link ResourceLocation}s that are provided by this mod.
+     * @return a stream of all Datapacks {@link Identifier}s that are provided by this mod.
      */
-    public Stream<ResourceLocation> providedDatapacks() {
+    public Stream<Identifier> providedDatapacks() {
         return providedDatapacks.stream();
     }
 
     /**
-     * Register a Datapack {@link ResourceLocation} that is provided by this mod.
+     * Register a Datapack {@link Identifier} that is provided by this mod.
      *
      * @param name           The name of the Datapack.
      * @param activationType The {@link ResourcePackActivationType} of the Datapack.
-     * @return The {@link ResourceLocation} of the Datapack.
+     * @return The {@link Identifier} of the Datapack.
      */
-    public ResourceLocation addDatapack(String name, ResourcePackActivationType activationType) {
-        final ResourceLocation id = id(name);
+    public Identifier addDatapack(
+        String name,
+        ResourcePackActivationType activationType
+    ) {
+        final Identifier id = id(name);
         providedDatapacks.add(id);
 
         ResourceManagerHelper.registerBuiltinResourcePack(
-                id,
-                this.modContainer,
-                activationType
+            id,
+            this.modContainer,
+            activationType
         );
         return id;
     }
 
     /**
-     * Register a Datapack {@link ResourceLocation} that is provided by this mod. When the dependency
+     * Register a Datapack {@link Identifier} that is provided by this mod. When the dependency
      * is not loaded, the Datapack will be registered with the {@link ResourcePackActivationType#NORMAL}
      * activation type. When the dependency is loaded, the Datapack will be registered with the
      * {@link ResourcePackActivationType#DEFAULT_ENABLED} activation type.
      *
      * @param dependency The dependency mod.
-     * @return The {@link ResourceLocation} of the Datapack.
+     * @return The {@link Identifier} of the Datapack.
      */
-    public ResourceLocation addDatapack(ModCore dependency) {
-        return this.addDatapack(dependency.namespace + "_extensions", dependency.isLoaded()
+    public Identifier addDatapack(ModCore dependency) {
+        return this.addDatapack(
+            dependency.namespace + "_extensions",
+            dependency.isLoaded()
                 ? ResourcePackActivationType.DEFAULT_ENABLED
-                : ResourcePackActivationType.NORMAL);
+                : ResourcePackActivationType.NORMAL
+        );
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ModCore modCore)) return false;
-        return Objects.equals(modId, modCore.modId) && Objects.equals(namespace, modCore.namespace);
+        return (
+            Objects.equals(modId, modCore.modId) &&
+            Objects.equals(namespace, modCore.namespace)
+        );
     }
 
     @Override
@@ -227,7 +233,7 @@ public final class ModCore implements Version.ModVersionProvider {
      *
      * @param modID     The mod id of the mod.
      * @param namespace The namespace of the mod. The namespace is used to create
-     *                  {@link ResourceLocation}s in {@link #id(String)} and {@link #mk(String)}.
+     *                  {@link Identifier}s in {@link #id(String)} and {@link #mk(String)}.
      * @return The instance of {@link ModCore} for the given mod id.
      */
     public static ModCore create(String modID, String namespace) {
@@ -258,7 +264,9 @@ public final class ModCore implements Version.ModVersionProvider {
      * @return true if the game is currently running on the client.
      */
     public static boolean isClient() {
-        return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
+        return (
+            FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT
+        );
     }
 
     /**
@@ -267,7 +275,8 @@ public final class ModCore implements Version.ModVersionProvider {
      * @return true if the game is currently running on the server.
      */
     public static boolean isServer() {
-        return FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER;
+        return (
+            FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER
+        );
     }
-
 }

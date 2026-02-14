@@ -1,16 +1,15 @@
 package org.betterx.wover.poi.api;
 
-import org.betterx.wover.poi.impl.PoiManagerImpl;
-
-import net.minecraft.resources.ResourceLocation;
+import java.util.Set;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.Set;
+import org.betterx.wover.poi.impl.PoiManagerImpl;
 import org.jetbrains.annotations.Nullable;
 
 public class PoiManager {
+
     /**
      * Register a new PoiType
      *
@@ -21,12 +20,18 @@ public class PoiManager {
      * @return The new PoiType
      */
     public static WoverPoiType register(
-            ResourceLocation location,
-            Set<BlockState> matchingStates,
-            int maxTickets,
-            int validRanges
+        Identifier location,
+        Set<BlockState> matchingStates,
+        int maxTickets,
+        int validRanges
     ) {
-        return PoiManagerImpl.register(location, matchingStates, maxTickets, validRanges, null);
+        return PoiManagerImpl.register(
+            location,
+            matchingStates,
+            maxTickets,
+            validRanges,
+            null
+        );
     }
 
     /**
@@ -40,12 +45,18 @@ public class PoiManager {
      * @return The new PoiType
      */
     public static WoverPoiType register(
-            ResourceLocation location,
-            Set<BlockState> matchingStates,
-            int maxTickets,
-            int validRanges,
-            @Nullable TagKey<Block> tag
+        Identifier location,
+        Set<BlockState> matchingStates,
+        int maxTickets,
+        int validRanges,
+        @Nullable TagKey<Block> tag
     ) {
-        return PoiManagerImpl.register(location, matchingStates, maxTickets, validRanges, tag);
+        return PoiManagerImpl.register(
+            location,
+            matchingStates,
+            maxTickets,
+            validRanges,
+            tag
+        );
     }
 }

@@ -1,17 +1,17 @@
 package org.betterx.wover.biome.api.modification.predicates;
 
-import de.ambertation.wunderlib.configs.AbstractConfig;
-import org.betterx.wover.biome.impl.modification.predicates.*;
-import org.betterx.wover.config.api.Configs;
-import org.betterx.wover.core.api.ModCore;
-
 import com.mojang.serialization.Codec;
+import de.ambertation.wunderlib.configs.AbstractConfig;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.entity.EntityType;
@@ -20,11 +20,9 @@ import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.structure.Structure;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import org.betterx.wover.biome.impl.modification.predicates.*;
+import org.betterx.wover.config.api.Configs;
+import org.betterx.wover.core.api.ModCore;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,7 +34,7 @@ import org.jetbrains.annotations.Nullable;
  * {@link BiomePredicateRegistry}.
  * <p>
  * If you need to, you can add custom predicates as well using
- * {@link BiomePredicateRegistry#register(ResourceLocation, KeyDispatchDataCodec)}.
+ * {@link BiomePredicateRegistry#register(Identifier, KeyDispatchDataCodec)}.
  */
 public interface BiomePredicate {
     /**
@@ -75,6 +73,7 @@ public interface BiomePredicate {
     static BiomePredicate anyOf(BiomePredicate... predicates) {
         return or(predicates);
     }
+
     /**
      * Alias name for {@link #and(BiomePredicate...)}.
      *
@@ -123,7 +122,11 @@ public interface BiomePredicate {
      */
     @SafeVarargs
     static BiomePredicate inBiomes(ResourceKey<Biome>... keys) {
-        return new Or(Arrays.stream(keys).map(biomeKey -> (BiomePredicate) new IsBiome(biomeKey)).toList());
+        return new Or(
+            Arrays.stream(keys)
+                .map(biomeKey -> (BiomePredicate) new IsBiome(biomeKey))
+                .toList()
+        );
     }
 
     /**
@@ -146,6 +149,7 @@ public interface BiomePredicate {
     static BiomePredicate inDimension(ResourceKey<LevelStem> key) {
         return new InDimension(key);
     }
+
     /**
      * Creates a predicate that tests if a biome is in the overworld.
      *
@@ -219,7 +223,9 @@ public interface BiomePredicate {
      * @param key the configured feature key
      * @return the predicate
      */
-    static BiomePredicate hasConfiguredFeature(ResourceKey<ConfiguredFeature<?, ?>> key) {
+    static BiomePredicate hasConfiguredFeature(
+        ResourceKey<ConfiguredFeature<?, ?>> key
+    ) {
         return new HasConfiguredFeature(key);
     }
 
@@ -294,9 +300,12 @@ public interface BiomePredicate {
      * @param targetValue the target value to compare against
      * @return the predicate
      */
-    static <T, R extends AbstractConfig<?>.Value<T, R>> BiomePredicate hasConfig(
-            AbstractConfig<?>.Value<T, R> value,
-            T targetValue
+    static <
+        T,
+        R extends AbstractConfig<?>.Value<T, R>
+    > BiomePredicate hasConfig(
+        AbstractConfig<?>.Value<T, R> value,
+        T targetValue
     ) {
         return ConfigIs.of(value, targetValue);
     }
@@ -307,21 +316,25 @@ public interface BiomePredicate {
      * This object contains all the information that is available to a predicate when it is tested.
      */
     final class Context {
+
         /**
          * The registry access object.
          */
         @NotNull
         public final RegistryAccess registryAccess;
+
         /**
          * The key for the Biome that is being tested.
          */
         @NotNull
         public final ResourceKey<Biome> biomeKey;
+
         /**
          * The Biome that is being tested.
          */
         @NotNull
         public final Biome biome;
+
         /**
          * The holder for the Biome that is being tested.
          */
@@ -339,6 +352,7 @@ public interface BiomePredicate {
          */
         @NotNull
         public final Registry<LevelStem> levelStems;
+
         /**
          * The structure registry from the {@link #registryAccess}
          */
@@ -350,6 +364,7 @@ public interface BiomePredicate {
          */
         @NotNull
         public final Registry<PlacedFeature> placedFeatures;
+
         /**
          * The configured feature registry from the {@link #registryAccess}
          */
@@ -357,19 +372,27 @@ public interface BiomePredicate {
         public final Registry<ConfiguredFeature<?, ?>> configuredFeatures;
 
         private Context(
-                @NotNull RegistryAccess registryAccess,
-                @NotNull Registry<Biome> biomes,
-                @NotNull ResourceKey<Biome> biomeKey,
-                @NotNull Biome biome
+            @NotNull RegistryAccess registryAccess,
+            @NotNull Registry<Biome> biomes,
+            @NotNull ResourceKey<Biome> biomeKey,
+            @NotNull Biome biome
         ) {
             this.registryAccess = registryAccess;
             this.biomeKey = biomeKey;
             this.biomes = biomes;
 
-            this.levelStems = registryAccess.lookupOrThrow(Registries.LEVEL_STEM);
-            this.structures = registryAccess.lookupOrThrow(Registries.STRUCTURE);
-            this.placedFeatures = registryAccess.lookupOrThrow(Registries.PLACED_FEATURE);
-            this.configuredFeatures = registryAccess.lookupOrThrow(Registries.CONFIGURED_FEATURE);
+            this.levelStems = registryAccess.lookupOrThrow(
+                Registries.LEVEL_STEM
+            );
+            this.structures = registryAccess.lookupOrThrow(
+                Registries.STRUCTURE
+            );
+            this.placedFeatures = registryAccess.lookupOrThrow(
+                Registries.PLACED_FEATURE
+            );
+            this.configuredFeatures = registryAccess.lookupOrThrow(
+                Registries.CONFIGURED_FEATURE
+            );
 
             this.biome = biome;
             this.biomeHolder = biomes.getOrThrow(biomeKey);
@@ -384,8 +407,8 @@ public interface BiomePredicate {
          */
         @ApiStatus.Internal
         public static @Nullable Context of(
-                @Nullable RegistryAccess registryAccess,
-                @NotNull ResourceKey<Biome> biomeKey
+            @Nullable RegistryAccess registryAccess,
+            @NotNull ResourceKey<Biome> biomeKey
         ) {
             if (registryAccess == null) return null;
             var biomes = registryAccess.lookupOrThrow(Registries.BIOME);
@@ -403,10 +426,9 @@ public interface BiomePredicate {
         @ApiStatus.Internal
         @Nullable
         public static Context of(
-                @Nullable RegistryAccess registryAccess,
-                @Nullable Registry<Biome> biomes,
-                @NotNull ResourceKey<Biome> biomeKey
-
+            @Nullable RegistryAccess registryAccess,
+            @Nullable Registry<Biome> biomes,
+            @NotNull ResourceKey<Biome> biomeKey
         ) {
             if (biomes == null || registryAccess == null) return null;
             var biome = biomes.get(biomeKey).orElse(null);
@@ -420,12 +442,12 @@ public interface BiomePredicate {
      * Codec for a BiomePredicate that delegates to the
      * Codec returned by {@link #codec()}.
      */
-    Codec<BiomePredicate> CODEC = BiomePredicateRegistryImpl
-            .BIOME_PREDICATES.byNameCodec()
-                             .dispatch(
-                                     p -> p.codec().codec(),
-                                     Function.identity()
-                             );
+    Codec<BiomePredicate> CODEC =
+        BiomePredicateRegistryImpl.BIOME_PREDICATES.byNameCodec().dispatch(
+            p -> p.codec().codec(),
+            Function.identity()
+        );
+
     /**
      * The codec for a predicate class.
      *

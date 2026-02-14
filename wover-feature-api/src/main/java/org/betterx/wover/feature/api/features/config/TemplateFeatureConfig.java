@@ -1,38 +1,41 @@
 package org.betterx.wover.feature.api.features.config;
 
-import org.betterx.wover.feature.impl.features.FeatureTemplateImpl;
-import org.betterx.wover.util.RandomizedWeightedList;
-
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
+import org.betterx.wover.feature.impl.features.FeatureTemplateImpl;
+import org.betterx.wover.util.RandomizedWeightedList;
 
 /**
  * Config for a {@link org.betterx.wover.feature.api.features.TemplateFeature}. The Configuration
  * holds a weighted list of {@link FeatureTemplateImpl}s that will be placed at random.
  * <p>
- * Structures are identified by {@link ResourceLocation}s. The structure
+ * Structures are identified by {@link Identifier}s. The structure
  * is loaded from a datapack at {@code data/<namespace>/structure/<path>.nbt}.
  */
 public class TemplateFeatureConfig implements FeatureConfiguration {
+
     /**
      * Codec for {@link TemplateFeatureConfig}.
      */
-    public static final Codec<TemplateFeatureConfig> CODEC = RecordCodecBuilder.create((instance) -> instance
-            .group(
-                    RandomizedWeightedList
-                            .buildCodec(FeatureTemplateImpl.CODEC)
-                            .fieldOf("structures")
-                            .forGetter((TemplateFeatureConfig cfg) -> cfg.structures)
-            )
-            .apply(instance, TemplateFeatureConfig::of)
-    );
+    public static final Codec<TemplateFeatureConfig> CODEC =
+        RecordCodecBuilder.create(instance ->
+            instance
+                .group(
+                    RandomizedWeightedList.buildCodec(FeatureTemplateImpl.CODEC)
+                        .fieldOf("structures")
+                        .forGetter((TemplateFeatureConfig cfg) ->
+                            cfg.structures
+                        )
+                )
+                .apply(instance, TemplateFeatureConfig::of)
+        );
 
     private final RandomizedWeightedList<FeatureTemplate> structures;
 
@@ -42,11 +45,15 @@ public class TemplateFeatureConfig implements FeatureConfiguration {
      * @param structures The weighted list of structures.
      * @return A new {@link TemplateFeatureConfig}.
      */
-    public static TemplateFeatureConfig of(RandomizedWeightedList<FeatureTemplate> structures) {
+    public static TemplateFeatureConfig of(
+        RandomizedWeightedList<FeatureTemplate> structures
+    ) {
         return new TemplateFeatureConfig(structures);
     }
 
-    private TemplateFeatureConfig(RandomizedWeightedList<FeatureTemplate> structures) {
+    private TemplateFeatureConfig(
+        RandomizedWeightedList<FeatureTemplate> structures
+    ) {
         this.structures = structures;
     }
 
@@ -83,7 +90,7 @@ public class TemplateFeatureConfig implements FeatureConfiguration {
          *
          * @return the location
          */
-        ResourceLocation getLocation();
+        Identifier getLocation();
 
         /**
          * Places the structure in the world. The structure is placed with the given rotation and mirror. The bottom
@@ -97,10 +104,10 @@ public class TemplateFeatureConfig implements FeatureConfiguration {
          * @return true if the structure was placed, false otherwise
          */
         boolean generateIfPlaceable(
-                ServerLevelAccessor level,
-                BlockPos pos,
-                Rotation r,
-                Mirror m
+            ServerLevelAccessor level,
+            BlockPos pos,
+            Rotation r,
+            Mirror m
         );
 
         /**

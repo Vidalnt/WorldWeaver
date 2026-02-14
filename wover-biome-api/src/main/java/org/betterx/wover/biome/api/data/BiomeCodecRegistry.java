@@ -8,7 +8,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.KeyDispatchDataCodec;
 
 public class BiomeCodecRegistry {
@@ -18,7 +18,7 @@ public class BiomeCodecRegistry {
     public static final Registry<MapCodec<? extends BiomeData>> BIOME_CODECS = BiomeCodecRegistryImpl.BIOME_CODECS;
 
     public static MapCodec<? extends BiomeData> register(
-            ResourceLocation location,
+            Identifier location,
             KeyDispatchDataCodec<? extends BiomeData> keyDispatchDataCodec
     ) {
         return BiomeCodecRegistryImpl.register(BiomeCodecRegistryImpl.BIOME_CODECS, location, keyDispatchDataCodec);

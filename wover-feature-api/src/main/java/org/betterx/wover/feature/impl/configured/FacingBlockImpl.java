@@ -1,16 +1,12 @@
 package org.betterx.wover.feature.impl.configured;
 
-import org.betterx.wover.block.api.BlockHelper;
-import org.betterx.wover.feature.api.Features;
-import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
-import org.betterx.wover.feature.api.configured.configurators.FacingBlock;
-import org.betterx.wover.feature.api.features.PlaceBlockFeature;
-import org.betterx.wover.feature.api.features.config.PlaceFacingBlockConfig;
-
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import net.minecraft.core.Direction;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -19,26 +15,36 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.SimpleStateProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStateProvider;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import org.betterx.wover.block.api.BlockHelper;
+import org.betterx.wover.feature.api.Features;
+import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
+import org.betterx.wover.feature.api.configured.configurators.FacingBlock;
+import org.betterx.wover.feature.api.features.PlaceBlockFeature;
+import org.betterx.wover.feature.api.features.config.PlaceFacingBlockConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class FacingBlockImpl extends FeatureConfiguratorImpl<PlaceFacingBlockConfig, PlaceBlockFeature<PlaceFacingBlockConfig>> implements org.betterx.wover.feature.api.configured.configurators.FacingBlock {
-    private final WeightedList.Builder<BlockState> stateBuilder = WeightedList.builder();
+public class FacingBlockImpl
+    extends FeatureConfiguratorImpl<
+        PlaceFacingBlockConfig,
+        PlaceBlockFeature<PlaceFacingBlockConfig>
+    >
+    implements
+        org.betterx.wover.feature.api.configured.configurators.FacingBlock
+{
+
+    private final WeightedList.Builder<BlockState> stateBuilder =
+        WeightedList.builder();
     BlockState firstState;
     private int count = 0;
     private List<Direction> directions = BlockHelper.HORIZONTAL;
 
     FacingBlockImpl(
-            @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
-            @Nullable ResourceKey<ConfiguredFeature<?, ?>> key
+        @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
+        @Nullable ResourceKey<ConfiguredFeature<?, ?>> key
     ) {
         super(ctx, key);
     }
-
 
     @Override
     public FacingBlock allHorizontal() {
@@ -89,12 +95,20 @@ public class FacingBlockImpl extends FeatureConfiguratorImpl<PlaceFacingBlockCon
     }
 
     @Override
-    public FacingBlock addAllStatesFor(IntegerProperty prop, Block block, int weight) {
+    public FacingBlock addAllStatesFor(
+        IntegerProperty prop,
+        Block block,
+        int weight
+    ) {
         Collection<Integer> values = prop.getPossibleValues();
-        values.forEach(s -> add(block.defaultBlockState().setValue(prop, s), Math.max(1, weight / values.size())));
+        values.forEach(s ->
+            add(
+                block.defaultBlockState().setValue(prop, s),
+                Math.max(1, weight / values.size())
+            )
+        );
         return this;
     }
-
 
     @Override
     public @NotNull PlaceFacingBlockConfig createConfiguration() {
@@ -109,7 +123,9 @@ public class FacingBlockImpl extends FeatureConfiguratorImpl<PlaceFacingBlockCon
         }
 
         if (provider == null) {
-            throw new IllegalStateException("Facing Blocks need a State Provider.");
+            throw new IllegalStateException(
+                "Facing Blocks need a State Provider."
+            );
         }
         return new PlaceFacingBlockConfig(provider, directions);
     }
@@ -120,12 +136,15 @@ public class FacingBlockImpl extends FeatureConfiguratorImpl<PlaceFacingBlockCon
     }
 
     public static class Key extends ConfiguredFeatureKey<FacingBlock> {
-        public Key(ResourceLocation id) {
+
+        public Key(Identifier id) {
             super(id);
         }
 
         @Override
-        public FacingBlock bootstrap(@NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx) {
+        public FacingBlock bootstrap(
+            @NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx
+        ) {
             return new FacingBlockImpl(ctx, key);
         }
     }

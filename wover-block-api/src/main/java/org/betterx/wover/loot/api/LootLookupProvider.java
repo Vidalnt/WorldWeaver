@@ -1,8 +1,11 @@
 package org.betterx.wover.loot.api;
 
-import org.betterx.wover.tag.api.predefined.CommonItemTags;
-
-import net.minecraft.advancements.critereon.*;
+import java.util.List;
+import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.minecraft.advancements.criterion.EnchantmentPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.criterion.StatePropertiesPredicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.predicates.DataComponentPredicates;
@@ -35,19 +38,24 @@ import net.minecraft.world.level.storage.loot.predicates.*;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
-
-import java.util.List;
+import org.betterx.wover.tag.api.predefined.CommonItemTags;
 import org.jetbrains.annotations.Nullable;
 
 public class LootLookupProvider {
-    public static final float[] VANILLA_LEAVES_STICK_CHANCES = new float[]{
-            0.02F,
-            0.022222223F,
-            0.025F,
-            0.033333335F,
-            0.1F
+
+    public static final float[] VANILLA_LEAVES_STICK_CHANCES = new float[] {
+        0.02F,
+        0.022222223F,
+        0.025F,
+        0.033333335F,
+        0.1F,
     };
-    public static final float[] VANILLA_LEAVES_SAPLING_CHANCES = new float[]{0.05F, 0.0625F, 0.083333336F, 0.1F};
+    public static final float[] VANILLA_LEAVES_SAPLING_CHANCES = new float[] {
+        0.05F,
+        0.0625F,
+        0.083333336F,
+        0.1F,
+    };
 
     public LootItemCondition.Builder hasSilkTouch() {
         return vanillaBlockLoot.hasSilkTouch();
@@ -90,30 +98,35 @@ public class LootLookupProvider {
     }
 
     public LootItemCondition.Builder silkTouchCondition() {
-        return MatchTool.toolMatches(ItemPredicate.Builder
-                .item()
-                .withComponents(
-                        DataComponentMatchers.Builder
-                                .components()
-                                .partial(
-                                        DataComponentPredicates.ENCHANTMENTS,
-                                        EnchantmentsPredicate.enchantments(List.of(
-                                                new EnchantmentPredicate(
-                                                        silkTouch(),
-                                                        MinMaxBounds.Ints.atLeast(1)
-                                                )
-                                        ))
+        return MatchTool.toolMatches(
+            ItemPredicate.Builder.item().withComponents(
+                DataComponentMatchers.Builder.components()
+                    .partial(
+                        DataComponentPredicates.ENCHANTMENTS,
+                        EnchantmentsPredicate.enchantments(
+                            List.of(
+                                new EnchantmentPredicate(
+                                    silkTouch(),
+                                    MinMaxBounds.Ints.atLeast(1)
                                 )
-                                .build()
-                ));
+                            )
+                        )
+                    )
+                    .build()
+            )
+        );
     }
 
     public LootItemCondition.Builder shearsCondition() {
-        return MatchTool.toolMatches(ItemPredicate.Builder.item().of(itemLookup(), CommonItemTags.SHEARS));
+        return MatchTool.toolMatches(
+            ItemPredicate.Builder.item().of(itemLookup(), CommonItemTags.SHEARS)
+        );
     }
 
     public LootItemCondition.Builder hoeCondition() {
-        return MatchTool.toolMatches(ItemPredicate.Builder.item().of(itemLookup(), ItemTags.HOES));
+        return MatchTool.toolMatches(
+            ItemPredicate.Builder.item().of(itemLookup(), ItemTags.HOES)
+        );
     }
 
     public LootItemCondition.Builder shearsOrHoeSilkTouchCondition() {
@@ -128,75 +141,77 @@ public class LootLookupProvider {
         return shearsOrSilkTouchCondition().invert();
     }
 
-    public LootTable.Builder dropWithSilkTouch(
-            ItemLike withSilkTouch
-    ) {
+    public LootTable.Builder dropWithSilkTouch(ItemLike withSilkTouch) {
         return vanillaBlockLoot.createSilkTouchOnlyTable(withSilkTouch);
-//        return LootTable
-//                .lootTable()
-//                .withPool(LootPool
-//                        .lootPool()
-//                        .setRolls(ConstantValue.exactly(1.0F))
-//                        .add(LootItem.lootTableItem(withSilkTouch).when(vanillaBlockLoot.hasSilkTouch()))
-//                );
+        //        return LootTable
+        //                .lootTable()
+        //                .withPool(LootPool
+        //                        .lootPool()
+        //                        .setRolls(ConstantValue.exactly(1.0F))
+        //                        .add(LootItem.lootTableItem(withSilkTouch).when(vanillaBlockLoot.hasSilkTouch()))
+        //                );
     }
 
     public LootTable.Builder dropWithSilkTouchOrHoeOrShears(
-            ItemLike withSilkTouch
+        ItemLike withSilkTouch
     ) {
-        return dropWithSilkTouchOrHoeOrShears(withSilkTouch, ConstantValue.exactly(1.0f));
+        return dropWithSilkTouchOrHoeOrShears(
+            withSilkTouch,
+            ConstantValue.exactly(1.0f)
+        );
     }
 
     public LootTable.Builder dropWithSilkTouchOrHoeOrShears(
-            ItemLike withSilkTouch,
-            NumberProvider rolls
+        ItemLike withSilkTouch,
+        NumberProvider rolls
     ) {
-        return LootTable
-                .lootTable()
-                .withPool(LootPool
-                        .lootPool()
-                        .when(shearsOrHoeSilkTouchCondition())
-                        .setRolls(rolls)
-                        .add(LootItem.lootTableItem(withSilkTouch))
-                );
+        return LootTable.lootTable().withPool(
+            LootPool.lootPool()
+                .when(shearsOrHoeSilkTouchCondition())
+                .setRolls(rolls)
+                .add(LootItem.lootTableItem(withSilkTouch))
+        );
     }
 
-    public LootTable.Builder dropWithSilkTouchOrShears(
-            ItemLike withSilkTouch
-    ) {
-        return LootTable
-                .lootTable()
-                .withPool(LootPool
-                        .lootPool()
-                        .when(vanillaBlockLoot.hasShearsOrSilkTouch())
-                        .setRolls(ConstantValue.exactly(1.0f))
-                        .add(LootItem.lootTableItem(withSilkTouch)));
+    public LootTable.Builder dropWithSilkTouchOrShears(ItemLike withSilkTouch) {
+        return LootTable.lootTable().withPool(
+            LootPool.lootPool()
+                .when(vanillaBlockLoot.hasShearsOrSilkTouch())
+                .setRolls(ConstantValue.exactly(1.0f))
+                .add(LootItem.lootTableItem(withSilkTouch))
+        );
     }
 
     public LootTable.Builder dropWithSilkTouch(
-            Block withSilkTouch,
-            ItemLike withoutSilkTouch,
-            NumberProvider numberProvider
+        Block withSilkTouch,
+        ItemLike withoutSilkTouch,
+        NumberProvider numberProvider
     ) {
-        return vanillaBlockLoot.createSingleItemTableWithSilkTouch(withSilkTouch, withoutSilkTouch, numberProvider);
+        return vanillaBlockLoot.createSingleItemTableWithSilkTouch(
+            withSilkTouch,
+            withoutSilkTouch,
+            numberProvider
+        );
     }
 
     public LootTable.Builder dropWithSilkTouch(
-            Block withSilkTouch,
-            List<DropInfo> withoutSilkTouch
+        Block withSilkTouch,
+        List<DropInfo> withoutSilkTouch
     ) {
         if (withoutSilkTouch.isEmpty()) return dropWithSilkTouch(withSilkTouch);
 
         var mainBuilder = LootTable.lootTable();
         for (DropInfo dropInfo : withoutSilkTouch) {
-            LootPoolSingletonContainer.Builder<? extends LootPoolSingletonContainer.Builder<?>> item = LootItem
-                    .lootTableItem(dropInfo.item)
-                    .apply(SetItemCountFunction.setCount(dropInfo.numberProvider));
+            LootPoolSingletonContainer.Builder<
+                ? extends LootPoolSingletonContainer.Builder<?>
+            > item = LootItem.lootTableItem(dropInfo.item).apply(
+                SetItemCountFunction.setCount(dropInfo.numberProvider)
+            );
             createSelfDropDispatchTable(
-                    mainBuilder,
-                    withSilkTouch,
-                    vanillaBlockLoot.hasSilkTouch(),
-                    vanillaBlockLoot.applyExplosionDecay(withSilkTouch, item)
+                mainBuilder,
+                withSilkTouch,
+                vanillaBlockLoot.hasSilkTouch(),
+                vanillaBlockLoot.applyExplosionDecay(withSilkTouch, item)
             );
         }
 
@@ -204,17 +219,21 @@ public class LootLookupProvider {
     }
 
     protected static void createSelfDropDispatchTable(
-            LootTable.Builder tableBuilder,
-            Block block,
-            LootItemCondition.Builder builder,
-            LootPoolEntryContainer.Builder<?> builder2
+        LootTable.Builder tableBuilder,
+        Block block,
+        LootItemCondition.Builder builder,
+        LootPoolEntryContainer.Builder<?> builder2
     ) {
-        tableBuilder.withPool(LootPool
-                .lootPool()
+        tableBuilder.withPool(
+            LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1.0F))
-                .add(LootItem.lootTableItem(block).when(builder).otherwise(builder2)));
+                .add(
+                    LootItem.lootTableItem(block)
+                        .when(builder)
+                        .otherwise(builder2)
+                )
+        );
     }
-
 
     public LootTable.Builder drop(ItemLike block) {
         return vanillaBlockLoot.createSingleItemTable(block);
@@ -228,214 +247,290 @@ public class LootLookupProvider {
         return vanillaBlockLoot.createOreDrop(oreBlock, ore);
     }
 
-    public LootTable.Builder dropOre(Block oreBlock, Item ore, NumberProvider numberProvider) {
+    public LootTable.Builder dropOre(
+        Block oreBlock,
+        Item ore,
+        NumberProvider numberProvider
+    ) {
         return vanillaBlockLoot.createSilkTouchDispatchTable(
+            oreBlock,
+            vanillaBlockLoot.applyExplosionDecay(
                 oreBlock,
-                vanillaBlockLoot.applyExplosionDecay(
-                        oreBlock,
-                        LootItem
-                                .lootTableItem(ore)
-                                .apply(SetItemCountFunction.setCount(numberProvider))
-                                .apply(ApplyBonusCount.addOreBonusCount(enchantmentLookup.getOrThrow(Enchantments.FORTUNE)))
-                )
+                LootItem.lootTableItem(ore)
+                    .apply(SetItemCountFunction.setCount(numberProvider))
+                    .apply(
+                        ApplyBonusCount.addOreBonusCount(
+                            enchantmentLookup.getOrThrow(Enchantments.FORTUNE)
+                        )
+                    )
+            )
         );
     }
 
     public LootTable.Builder dropDoor(Block doorBlock) {
-        return vanillaBlockLoot.createSinglePropConditionTable(doorBlock, DoorBlock.HALF, DoubleBlockHalf.LOWER);
+        return vanillaBlockLoot.createSinglePropConditionTable(
+            doorBlock,
+            DoorBlock.HALF,
+            DoubleBlockHalf.LOWER
+        );
     }
 
     /*
     this.
      */
 
-    public <T extends Comparable<T> & StringRepresentable> LootTable.Builder dropSingleWithCondition(
-            Block block,
-            Property<T> property,
-            T comparable
+    public <
+        T extends Comparable<T> & StringRepresentable
+    > LootTable.Builder dropSingleWithCondition(
+        Block block,
+        Property<T> property,
+        T comparable
     ) {
-        return vanillaBlockLoot.createSinglePropConditionTable(block, property, comparable);
-    }
-
-    public <T extends Comparable<T> & StringRepresentable> LootTable.Builder dropWithSilkTouchAndCondition(
-            Block withSilkTouch,
-            ItemLike withoutSilkTouch,
-            NumberProvider numberProvider,
-            Property<T> property,
-            T comparable
-    ) {
-        return vanillaBlockLoot.createSilkTouchDispatchTable(
-                withSilkTouch,
-                vanillaBlockLoot.applyExplosionCondition(
-                        withSilkTouch,
-                        LootItem.lootTableItem(withoutSilkTouch)
-                                .when(LootItemBlockStatePropertyCondition
-                                        .hasBlockStateProperties(withSilkTouch)
-                                        .setProperties(net.minecraft.advancements.critereon.StatePropertiesPredicate.Builder
-                                                .properties()
-                                                .hasProperty(property, comparable))
-                                )
-                                .apply(SetItemCountFunction.setCount(numberProvider))
-                )
+        return vanillaBlockLoot.createSinglePropConditionTable(
+            block,
+            property,
+            comparable
         );
     }
 
-    public <T extends Comparable<T> & StringRepresentable> LootTable.Builder dropWithSilkTouchAndCondition(
-            Block withSilkTouch,
-            Property<T> property,
-            T comparable
+    public <
+        T extends Comparable<T> & StringRepresentable
+    > LootTable.Builder dropWithSilkTouchAndCondition(
+        Block withSilkTouch,
+        ItemLike withoutSilkTouch,
+        NumberProvider numberProvider,
+        Property<T> property,
+        T comparable
+    ) {
+        return vanillaBlockLoot.createSilkTouchDispatchTable(
+            withSilkTouch,
+            vanillaBlockLoot.applyExplosionCondition(
+                withSilkTouch,
+                LootItem.lootTableItem(withoutSilkTouch)
+                    .when(
+                        LootItemBlockStatePropertyCondition.hasBlockStateProperties(
+                            withSilkTouch
+                        ).setProperties(
+                            StatePropertiesPredicate.Builder.properties().hasProperty(
+                                property,
+                                comparable
+                            )
+                        )
+                    )
+                    .apply(SetItemCountFunction.setCount(numberProvider))
+            )
+        );
+    }
+
+    public <
+        T extends Comparable<T> & StringRepresentable
+    > LootTable.Builder dropWithSilkTouchAndCondition(
+        Block withSilkTouch,
+        Property<T> property,
+        T comparable
     ) {
         return LootTable.lootTable().withPool(
-                LootPool
-                        .lootPool()
-                        .when(vanillaBlockLoot.hasSilkTouch())
-                        .setRolls(ConstantValue.exactly(1.0F))
-                        .add(LootItem.lootTableItem(withSilkTouch)
-                                     .when(LootItemBlockStatePropertyCondition
-                                             .hasBlockStateProperties(withSilkTouch)
-                                             .setProperties(net.minecraft.advancements.critereon.StatePropertiesPredicate.Builder
-                                                     .properties()
-                                                     .hasProperty(property, comparable))
-                                     )
+            LootPool.lootPool()
+                .when(vanillaBlockLoot.hasSilkTouch())
+                .setRolls(ConstantValue.exactly(1.0F))
+                .add(
+                    LootItem.lootTableItem(withSilkTouch).when(
+                        LootItemBlockStatePropertyCondition.hasBlockStateProperties(
+                            withSilkTouch
+                        ).setProperties(
+                            StatePropertiesPredicate.Builder.properties().hasProperty(
+                                property,
+                                comparable
+                            )
                         )
+                    )
+                )
         );
     }
 
     public LootTable.Builder dropPlant(Block plantBlock, ItemLike sapling) {
-        return dropPlant(plantBlock, sapling, 0.125F, ConstantValue.exactly(1), 2);
+        return dropPlant(
+            plantBlock,
+            sapling,
+            0.125F,
+            ConstantValue.exactly(1),
+            2
+        );
     }
 
     public LootTable.Builder dropPlant(
-            Block plantBlock,
-            ItemLike sapling,
-            float saplingChance,
-            NumberProvider saplingCount,
-            int fortuneBonus
+        Block plantBlock,
+        ItemLike sapling,
+        float saplingChance,
+        NumberProvider saplingCount,
+        int fortuneBonus
     ) {
         return vanillaBlockLoot.createShearsDispatchTable(
-                plantBlock, vanillaBlockLoot.applyExplosionDecay(
-                        plantBlock, (LootItem
-                                .lootTableItem(sapling)
-                                .when(LootItemRandomChanceCondition.randomChance(saplingChance)))
-                                .apply(SetItemCountFunction.setCount(saplingCount))
-                                .apply(ApplyBonusCount.addUniformBonusCount(
-                                        enchantmentLookup.getOrThrow(Enchantments.FORTUNE),
-                                        fortuneBonus
-                                ))
+            plantBlock,
+            vanillaBlockLoot.applyExplosionDecay(
+                plantBlock,
+                (
+                    LootItem.lootTableItem(sapling).when(
+                        LootItemRandomChanceCondition.randomChance(
+                            saplingChance
+                        )
+                    )
+                ).apply(SetItemCountFunction.setCount(saplingCount)).apply(
+                    ApplyBonusCount.addUniformBonusCount(
+                        enchantmentLookup.getOrThrow(Enchantments.FORTUNE),
+                        fortuneBonus
+                    )
                 )
+            )
         );
     }
 
-    public <T extends Comparable<T> & StringRepresentable> LootTable.Builder dropPlant(
-            Block plantBlock,
-            ItemLike fruit,
-            ItemLike seed,
-            Property<T> property,
-            T comparable
+    public <
+        T extends Comparable<T> & StringRepresentable
+    > LootTable.Builder dropPlant(
+        Block plantBlock,
+        ItemLike fruit,
+        ItemLike seed,
+        Property<T> property,
+        T comparable
     ) {
         return this.dropPlant(
-                plantBlock,
-                fruit,
-                ConstantValue.exactly(1),
-                seed,
-                ConstantValue.exactly(1),
-                0.571f,
-                3,
-                property,
-                comparable
+            plantBlock,
+            fruit,
+            ConstantValue.exactly(1),
+            seed,
+            ConstantValue.exactly(1),
+            0.571f,
+            3,
+            property,
+            comparable
         );
     }
 
     public LootTable.Builder dropPlant(
-            Block plantBlock,
-            ItemLike fruit,
-            ItemLike seed,
-            IntegerProperty property,
-            int comparable
+        Block plantBlock,
+        ItemLike fruit,
+        ItemLike seed,
+        IntegerProperty property,
+        int comparable
     ) {
         return this.dropPlant(
-                plantBlock,
-                fruit,
-                ConstantValue.exactly(1),
-                seed,
-                ConstantValue.exactly(1),
-                0.571f,
-                3,
-                property,
-                comparable
+            plantBlock,
+            fruit,
+            ConstantValue.exactly(1),
+            seed,
+            ConstantValue.exactly(1),
+            0.571f,
+            3,
+            property,
+            comparable
         );
     }
 
-    public <T extends Comparable<T> & StringRepresentable> LootTable.Builder dropPlant(
-            Block plantBlock,
-            ItemLike fruit,
-            NumberProvider fruitCount,
-            ItemLike seed,
-            NumberProvider seedCount,
-            float probability,
-            int extraRounds,
-            Property<T> property,
-            T comparable
+    public <
+        T extends Comparable<T> & StringRepresentable
+    > LootTable.Builder dropPlant(
+        Block plantBlock,
+        ItemLike fruit,
+        NumberProvider fruitCount,
+        ItemLike seed,
+        NumberProvider seedCount,
+        float probability,
+        int extraRounds,
+        Property<T> property,
+        T comparable
     ) {
-        LootItemCondition.Builder condition = LootItemBlockStatePropertyCondition
-                .hasBlockStateProperties(plantBlock)
-                .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(property, comparable));
-        return dropPlant(plantBlock, fruit, fruitCount, seed, seedCount, probability, extraRounds, condition);
+        LootItemCondition.Builder condition =
+            LootItemBlockStatePropertyCondition.hasBlockStateProperties(
+                plantBlock
+            ).setProperties(
+                StatePropertiesPredicate.Builder.properties().hasProperty(
+                    property,
+                    comparable
+                )
+            );
+        return dropPlant(
+            plantBlock,
+            fruit,
+            fruitCount,
+            seed,
+            seedCount,
+            probability,
+            extraRounds,
+            condition
+        );
     }
 
     public LootTable.Builder dropPlant(
-            Block plantBlock,
-            ItemLike fruit,
-            NumberProvider fruitCount,
-            ItemLike seed,
-            NumberProvider seedCount,
-            float probability,
-            int extraRounds,
-            IntegerProperty property,
-            int comparable
+        Block plantBlock,
+        ItemLike fruit,
+        NumberProvider fruitCount,
+        ItemLike seed,
+        NumberProvider seedCount,
+        float probability,
+        int extraRounds,
+        IntegerProperty property,
+        int comparable
     ) {
-        LootItemCondition.Builder condition = LootItemBlockStatePropertyCondition
-                .hasBlockStateProperties(plantBlock)
-                .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(property, comparable));
-        return dropPlant(plantBlock, fruit, fruitCount, seed, seedCount, probability, extraRounds, condition);
+        LootItemCondition.Builder condition =
+            LootItemBlockStatePropertyCondition.hasBlockStateProperties(
+                plantBlock
+            ).setProperties(
+                StatePropertiesPredicate.Builder.properties().hasProperty(
+                    property,
+                    comparable
+                )
+            );
+        return dropPlant(
+            plantBlock,
+            fruit,
+            fruitCount,
+            seed,
+            seedCount,
+            probability,
+            extraRounds,
+            condition
+        );
     }
 
     public LootTable.Builder dropPlant(
-            Block plantBlock,
-            ItemLike fruit,
-            NumberProvider fruitCount,
-            ItemLike seed,
-            NumberProvider seedCount,
-            float probability,
-            int extraRounds,
-            LootItemCondition.Builder condition
+        Block plantBlock,
+        ItemLike fruit,
+        NumberProvider fruitCount,
+        ItemLike seed,
+        NumberProvider seedCount,
+        float probability,
+        int extraRounds,
+        LootItemCondition.Builder condition
     ) {
         return vanillaBlockLoot.applyExplosionDecay(
-                plantBlock,
-                LootTable.lootTable().withPool(
-                        LootPool
-                                .lootPool()
-                                .add(LootItem
-                                        .lootTableItem(fruit)
-                                        .apply(SetItemCountFunction.setCount(fruitCount))
-                                        .when(condition).otherwise(LootItem.lootTableItem(seed))
-
-                                )
-                ).withPool(
-                        LootPool
-                                .lootPool()
-                                .when(condition)
-                                .add(LootItem
-                                        .lootTableItem(seed)
-                                        .apply(SetItemCountFunction.setCount(seedCount))
-                                        .apply(ApplyBonusCount.addBonusBinomialDistributionCount(
-                                                enchantmentLookup.getOrThrow(Enchantments.FORTUNE),
-                                                probability,
-                                                extraRounds
-                                        ))
-                                )
+            plantBlock,
+            LootTable.lootTable()
+                .withPool(
+                    LootPool.lootPool().add(
+                        LootItem.lootTableItem(fruit)
+                            .apply(SetItemCountFunction.setCount(fruitCount))
+                            .when(condition)
+                            .otherwise(LootItem.lootTableItem(seed))
+                    )
                 )
-
+                .withPool(
+                    LootPool.lootPool()
+                        .when(condition)
+                        .add(
+                            LootItem.lootTableItem(seed)
+                                .apply(SetItemCountFunction.setCount(seedCount))
+                                .apply(
+                                    ApplyBonusCount.addBonusBinomialDistributionCount(
+                                        enchantmentLookup.getOrThrow(
+                                            Enchantments.FORTUNE
+                                        ),
+                                        probability,
+                                        extraRounds
+                                    )
+                                )
+                        )
+                )
         );
     }
 
@@ -443,64 +538,89 @@ public class LootLookupProvider {
         return this.dropLeaves(leaves, sapling, VANILLA_LEAVES_SAPLING_CHANCES);
     }
 
-    public LootTable.Builder dropLeaves(Block leaves, Block sapling, float... saplingChances) {
-        return vanillaBlockLoot.createLeavesDrops(leaves, sapling, saplingChances);
-    }
-
     public LootTable.Builder dropLeaves(
-            Block leaveBlock,
-            ItemLike saplingBlock,
-            int fortuneRate,
-            int dropRate
+        Block leaves,
+        Block sapling,
+        float... saplingChances
     ) {
-        return dropLeaves(leaveBlock, saplingBlock, null, null, fortuneRate, dropRate);
+        return vanillaBlockLoot.createLeavesDrops(
+            leaves,
+            sapling,
+            saplingChances
+        );
     }
 
     public LootTable.Builder dropLeaves(
-            Block leaveBlock,
-            ItemLike saplingBlock,
-            @Nullable ItemLike stickBlock,
-            @Nullable NumberProvider stickCount,
-            int fortuneRate,
-            int dropRate
+        Block leaveBlock,
+        ItemLike saplingBlock,
+        int fortuneRate,
+        int dropRate
+    ) {
+        return dropLeaves(
+            leaveBlock,
+            saplingBlock,
+            null,
+            null,
+            fortuneRate,
+            dropRate
+        );
+    }
+
+    public LootTable.Builder dropLeaves(
+        Block leaveBlock,
+        ItemLike saplingBlock,
+        @Nullable ItemLike stickBlock,
+        @Nullable NumberProvider stickCount,
+        int fortuneRate,
+        int dropRate
     ) {
         float fortuneSaplingChance = 1.0f / fortuneRate;
         float saplingChance = 1.0f / dropRate;
         float[] fortuneSaplingChances = {
-                0.8f * saplingChance,
-                fortuneSaplingChance,
-                1.3333f * fortuneSaplingChance,
-                1.6666f * fortuneSaplingChance
+            0.8f * saplingChance,
+            fortuneSaplingChance,
+            1.3333f * fortuneSaplingChance,
+            1.6666f * fortuneSaplingChance,
         };
-        var baseBuilder = vanillaBlockLoot
-                .createSilkTouchOrShearsDispatchTable(
-                        leaveBlock,
-                        vanillaBlockLoot
-                                .applyExplosionCondition(
-                                        leaveBlock,
-                                        LootItem.lootTableItem(saplingBlock)
-                                )
-                                .when(BonusLevelTableCondition.bonusLevelFlatChance(
-                                        enchantmentLookup.getOrThrow(Enchantments.FORTUNE), fortuneSaplingChances))
-                );
+        var baseBuilder = vanillaBlockLoot.createSilkTouchOrShearsDispatchTable(
+            leaveBlock,
+            vanillaBlockLoot
+                .applyExplosionCondition(
+                    leaveBlock,
+                    LootItem.lootTableItem(saplingBlock)
+                )
+                .when(
+                    BonusLevelTableCondition.bonusLevelFlatChance(
+                        enchantmentLookup.getOrThrow(Enchantments.FORTUNE),
+                        fortuneSaplingChances
+                    )
+                )
+        );
         if (stickBlock != null) {
             if (stickCount == null) {
                 stickCount = UniformGenerator.between(1.0f, 2.0f);
             }
             baseBuilder = baseBuilder.withPool(
-                    LootPool.lootPool()
-                            .setRolls(ConstantValue.exactly(1.0f))
-                            .when(vanillaBlockLoot.doesNotHaveShearsOrSilkTouch())
-                            .add(vanillaBlockLoot
-                                    .applyExplosionDecay(
-                                            leaveBlock,
-                                            LootItem.lootTableItem(Items.STICK)
-                                                    .apply(SetItemCountFunction.setCount(stickCount))
-                                    )
-                                    .when(BonusLevelTableCondition.bonusLevelFlatChance(
-                                            enchantmentLookup.getOrThrow(Enchantments.FORTUNE),
-                                            VANILLA_LEAVES_STICK_CHANCES
-                                    )))
+                LootPool.lootPool()
+                    .setRolls(ConstantValue.exactly(1.0f))
+                    .when(vanillaBlockLoot.doesNotHaveShearsOrSilkTouch())
+                    .add(
+                        vanillaBlockLoot
+                            .applyExplosionDecay(
+                                leaveBlock,
+                                LootItem.lootTableItem(Items.STICK).apply(
+                                    SetItemCountFunction.setCount(stickCount)
+                                )
+                            )
+                            .when(
+                                BonusLevelTableCondition.bonusLevelFlatChance(
+                                    enchantmentLookup.getOrThrow(
+                                        Enchantments.FORTUNE
+                                    ),
+                                    VANILLA_LEAVES_STICK_CHANCES
+                                )
+                            )
+                    )
             );
         }
         return baseBuilder;
@@ -523,26 +643,28 @@ public class LootLookupProvider {
     }
 
     public LootTable.Builder dropComposter(Block compsterBlock) {
-        return LootTable
-                .lootTable()
-                .withPool(LootPool.lootPool()
-                                  .add(vanillaBlockLoot.applyExplosionDecay(
-                                          compsterBlock,
-                                          LootItem.lootTableItem(compsterBlock.asItem())
-                                  )))
-                .withPool(
-                        LootPool.lootPool()
-                                .add(LootItem.lootTableItem(Items.BONE_MEAL))
-                                .when(
-                                        LootItemBlockStatePropertyCondition
-                                                .hasBlockStateProperties(compsterBlock)
-                                                .setProperties(
-                                                        StatePropertiesPredicate
-                                                                .Builder.
-                                                                properties()
-                                                                .hasProperty(ComposterBlock.LEVEL, 8)
-                                                )
-                                )
-                );
+        return LootTable.lootTable()
+            .withPool(
+                LootPool.lootPool().add(
+                    vanillaBlockLoot.applyExplosionDecay(
+                        compsterBlock,
+                        LootItem.lootTableItem(compsterBlock.asItem())
+                    )
+                )
+            )
+            .withPool(
+                LootPool.lootPool()
+                    .add(LootItem.lootTableItem(Items.BONE_MEAL))
+                    .when(
+                        LootItemBlockStatePropertyCondition.hasBlockStateProperties(
+                            compsterBlock
+                        ).setProperties(
+                            StatePropertiesPredicate.Builder.properties().hasProperty(
+                                ComposterBlock.LEVEL,
+                                8
+                            )
+                        )
+                    )
+            );
     }
 }

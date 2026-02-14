@@ -13,9 +13,9 @@ import net.minecraft.world.item.BoatItem;
  * (or `/assets/namespace/textures/entity/chest_boat/`). The Texture should have the same name as the Boat-Item.
  * <p>
  * Example:
- * for a Boat with the ResourceLocation `namespace:obsidian_boat`, you should place the textures in
+ * for a Boat with the Identifier `namespace:obsidian_boat`, you should place the textures in
  * `/assets/namespace/textures/entity/boat/obsidian_boat.png`.
- * for a ChestBoat with the ResourceLocation `namespace:obsidian_chest_boat`, you should place the textures in
+ * for a ChestBoat with the Identifier `namespace:obsidian_chest_boat`, you should place the textures in
  * `/assets/namespace/textures/entity/chest_boat/obsidian_chest_boat.png`.
  */
 public interface BoatRendererTrait extends ItemTrait<BoatItem, BoatRendererTrait> {

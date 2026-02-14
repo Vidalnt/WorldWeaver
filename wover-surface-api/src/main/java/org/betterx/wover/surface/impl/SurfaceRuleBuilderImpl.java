@@ -1,12 +1,5 @@
 package org.betterx.wover.surface.impl;
 
-import org.betterx.wover.surface.api.AssignedSurfaceRule;
-import org.betterx.wover.surface.api.Conditions;
-import org.betterx.wover.surface.api.SurfaceRuleBuilder;
-import org.betterx.wover.surface.api.SurfaceRuleRegistry;
-import org.betterx.wover.surface.api.conditions.NoiseCondition;
-import org.betterx.wover.util.PriorityLinkedList;
-
 import net.minecraft.core.Holder;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
@@ -14,14 +7,21 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.SurfaceRules;
 import net.minecraft.world.level.levelgen.placement.CaveSurface;
-
+import org.betterx.wover.surface.api.AssignedSurfaceRule;
+import org.betterx.wover.surface.api.Conditions;
+import org.betterx.wover.surface.api.SurfaceRuleBuilder;
+import org.betterx.wover.surface.api.SurfaceRuleRegistry;
+import org.betterx.wover.surface.api.conditions.NoiseCondition;
+import org.betterx.wover.util.PriorityLinkedList;
 import org.jetbrains.annotations.NotNull;
 
-public class SurfaceRuleBuilderImpl<T extends BaseSurfaceRuleBuilder<T>> implements BaseSurfaceRuleBuilder<T> {
+public class SurfaceRuleBuilderImpl<
+    T extends BaseSurfaceRuleBuilder<T>
+> implements BaseSurfaceRuleBuilder<T> {
+
     private final PriorityLinkedList<SurfaceRules.RuleSource> rules;
     protected ResourceKey<Biome> biomeKey;
     protected int sortPriority;
-
 
     public SurfaceRuleBuilderImpl() {
         this.biomeKey = null;
@@ -85,7 +85,10 @@ public class SurfaceRuleBuilderImpl<T extends BaseSurfaceRuleBuilder<T>> impleme
      */
     public T subsurface(BlockState state, int depth) {
         SurfaceRules.RuleSource rule = SurfaceRules.state(state);
-        rule = SurfaceRules.ifTrue(SurfaceRules.stoneDepthCheck(depth, false, CaveSurface.FLOOR), rule);
+        rule = SurfaceRules.ifTrue(
+            SurfaceRules.stoneDepthCheck(depth, false, CaveSurface.FLOOR),
+            rule
+        );
         rules.add(rule, SUB_SURFACE_PRIORITY);
 
         return (T) this;
@@ -127,17 +130,11 @@ public class SurfaceRuleBuilderImpl<T extends BaseSurfaceRuleBuilder<T>> impleme
      * @return same {@link SurfaceRuleBuilder} instance.
      */
     public T belowFloor(BlockState state, int height, NoiseCondition noise) {
-
         SurfaceRules.RuleSource rule = SurfaceRules.state(state);
         rule = SurfaceRules.ifTrue(
-                SurfaceRules.stoneDepthCheck(
-                        height,
-                        false,
-                        CaveSurface.FLOOR
-                ),
-                SurfaceRules.ifTrue(noise, rule)
+            SurfaceRules.stoneDepthCheck(height, false, CaveSurface.FLOOR),
+            SurfaceRules.ifTrue(noise, rule)
         );
-
 
         rules.add(rule, BELOW_FLOOR_PRIORITY);
         return (T) this;
@@ -154,11 +151,9 @@ public class SurfaceRuleBuilderImpl<T extends BaseSurfaceRuleBuilder<T>> impleme
     public T belowFloor(BlockState state, int height) {
         SurfaceRules.RuleSource rule = SurfaceRules.state(state);
         rule = SurfaceRules.ifTrue(
-                SurfaceRules.stoneDepthCheck(
-                        height,
-                        false,
-                        CaveSurface.FLOOR
-                ), rule);
+            SurfaceRules.stoneDepthCheck(height, false, CaveSurface.FLOOR),
+            rule
+        );
 
         rules.add(rule, BELOW_FLOOR_PRIORITY);
         return (T) this;
@@ -188,7 +183,10 @@ public class SurfaceRuleBuilderImpl<T extends BaseSurfaceRuleBuilder<T>> impleme
      */
     public T aboveCeil(BlockState state, int height) {
         SurfaceRules.RuleSource rule = SurfaceRules.state(state);
-        rule = SurfaceRules.ifTrue(SurfaceRules.stoneDepthCheck(height, false, CaveSurface.CEILING), rule);
+        rule = SurfaceRules.ifTrue(
+            SurfaceRules.stoneDepthCheck(height, false, CaveSurface.CEILING),
+            rule
+        );
 
         rules.add(rule, ABOVE_CEILING_PRIORITY);
         return (T) this;
@@ -204,7 +202,10 @@ public class SurfaceRuleBuilderImpl<T extends BaseSurfaceRuleBuilder<T>> impleme
      */
     public T steep(BlockState state, int depth) {
         SurfaceRules.RuleSource rule = SurfaceRules.state(state);
-        rule = SurfaceRules.ifTrue(SurfaceRules.stoneDepthCheck(depth, false, CaveSurface.FLOOR), rule);
+        rule = SurfaceRules.ifTrue(
+            SurfaceRules.stoneDepthCheck(depth, false, CaveSurface.FLOOR),
+            rule
+        );
         rule = SurfaceRules.ifTrue(SurfaceRules.steep(), rule);
 
         rules.add(rule, STEEP_SURFACE_PRIORITY);
@@ -244,7 +245,11 @@ public class SurfaceRuleBuilderImpl<T extends BaseSurfaceRuleBuilder<T>> impleme
      * @return same {@link SurfaceRuleBuilder} instance.
      */
     public T chancedFloor(BlockState surfaceBlockA, BlockState surfaceBlockB) {
-        return chancedFloor(surfaceBlockA, surfaceBlockB, Conditions.DOUBLE_BLOCK_SURFACE_NOISE);
+        return chancedFloor(
+            surfaceBlockA,
+            surfaceBlockB,
+            Conditions.DOUBLE_BLOCK_SURFACE_NOISE
+        );
     }
 
     /**
@@ -256,37 +261,35 @@ public class SurfaceRuleBuilderImpl<T extends BaseSurfaceRuleBuilder<T>> impleme
      * @param noise         The {@link NoiseCondition}
      * @return same {@link SurfaceRuleBuilder} instance.
      */
-    public T chancedFloor(BlockState surfaceBlockA, BlockState surfaceBlockB, NoiseCondition noise) {
-        SurfaceRules.RuleSource rule =
-                SurfaceRules.ifTrue(
-                        SurfaceRules.ON_FLOOR,
-                        SurfaceRules.sequence(
-                                SurfaceRules.ifTrue(
-                                        noise,
-                                        SurfaceRules.state(
-                                                surfaceBlockA)
-                                ),
-                                SurfaceRules.state(surfaceBlockB)
-                        )
-                );
+    public T chancedFloor(
+        BlockState surfaceBlockA,
+        BlockState surfaceBlockB,
+        NoiseCondition noise
+    ) {
+        SurfaceRules.RuleSource rule = SurfaceRules.ifTrue(
+            SurfaceRules.ON_FLOOR,
+            SurfaceRules.sequence(
+                SurfaceRules.ifTrue(noise, SurfaceRules.state(surfaceBlockA)),
+                SurfaceRules.state(surfaceBlockB)
+            )
+        );
 
         rules.add(rule, FLOOR_PRIORITY);
         return (T) this;
     }
 
-    public T chancedFloor(BlockState surfaceBlockA, SurfaceRules.RuleSource surfaceBlockB, NoiseCondition noise) {
-        SurfaceRules.RuleSource rule =
-                SurfaceRules.ifTrue(
-                        SurfaceRules.ON_FLOOR,
-                        SurfaceRules.sequence(
-                                SurfaceRules.ifTrue(
-                                        noise,
-                                        SurfaceRules.state(
-                                                surfaceBlockA)
-                                ),
-                                surfaceBlockB
-                        )
-                );
+    public T chancedFloor(
+        BlockState surfaceBlockA,
+        SurfaceRules.RuleSource surfaceBlockB,
+        NoiseCondition noise
+    ) {
+        SurfaceRules.RuleSource rule = SurfaceRules.ifTrue(
+            SurfaceRules.ON_FLOOR,
+            SurfaceRules.sequence(
+                SurfaceRules.ifTrue(noise, SurfaceRules.state(surfaceBlockA)),
+                surfaceBlockB
+            )
+        );
         rules.add(rule, FLOOR_PRIORITY);
         return (T) this;
     }
@@ -321,13 +324,18 @@ public class SurfaceRuleBuilderImpl<T extends BaseSurfaceRuleBuilder<T>> impleme
         if (rules.size() == 1) {
             return rules.get(0);
         }
-        SurfaceRules.RuleSource[] ruleArray = rules.toArray(new SurfaceRules.RuleSource[rules.size()]);
+        SurfaceRules.RuleSource[] ruleArray = rules.toArray(
+            new SurfaceRules.RuleSource[rules.size()]
+        );
         SurfaceRules.RuleSource rule = SurfaceRules.sequence(ruleArray);
         return rule;
     }
 
+    public static class StandalonBuilder
+        extends SurfaceRuleBuilderImpl<SurfaceRuleBuilder>
+        implements SurfaceRuleBuilder
+    {
 
-    public static class StandalonBuilder extends SurfaceRuleBuilderImpl<SurfaceRuleBuilder> implements SurfaceRuleBuilder {
         /**
          * Register rule in the {@link SurfaceRuleRegistry} with the currently set sort priority (see {@link #sortPriority}).
          *
@@ -338,14 +346,24 @@ public class SurfaceRuleBuilderImpl<T extends BaseSurfaceRuleBuilder<T>> impleme
          */
 
         public Holder<AssignedSurfaceRule> register(
-                @NotNull BootstrapContext<AssignedSurfaceRule> ctx,
-                @NotNull ResourceKey<AssignedSurfaceRule> key
+            @NotNull BootstrapContext<AssignedSurfaceRule> ctx,
+            @NotNull ResourceKey<AssignedSurfaceRule> key
         ) {
             if (biomeKey == null) {
-                throw new IllegalStateException("Biome key is not set for surface rule '" + key.location() + "'");
+                throw new IllegalStateException(
+                    "Biome key is not set for surface rule '" +
+                        key.identifier() +
+                        "'"
+                );
             }
 
-            return SurfaceRuleRegistryImpl.register(ctx, key, biomeKey, getRuleSource(), sortPriority);
+            return SurfaceRuleRegistryImpl.register(
+                ctx,
+                key,
+                biomeKey,
+                getRuleSource(),
+                sortPriority
+            );
         }
     }
 }

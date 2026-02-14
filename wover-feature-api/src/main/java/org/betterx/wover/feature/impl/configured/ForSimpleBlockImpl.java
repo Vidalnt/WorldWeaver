@@ -1,11 +1,8 @@
 package org.betterx.wover.feature.impl.configured;
 
-import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
-import org.betterx.wover.feature.api.configured.configurators.ForSimpleBlock;
-
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -13,21 +10,27 @@ import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.SimpleBlockFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
-
+import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
+import org.betterx.wover.feature.api.configured.configurators.ForSimpleBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+public class ForSimpleBlockImpl
+    extends FeatureConfiguratorImpl<
+        SimpleBlockConfiguration,
+        SimpleBlockFeature
+    >
+    implements ForSimpleBlock
+{
 
-public class ForSimpleBlockImpl extends FeatureConfiguratorImpl<SimpleBlockConfiguration, SimpleBlockFeature> implements ForSimpleBlock {
     private BlockStateProvider provider;
 
     ForSimpleBlockImpl(
-            @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
-            @Nullable ResourceKey<ConfiguredFeature<?, ?>> featureKey
+        @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
+        @Nullable ResourceKey<ConfiguredFeature<?, ?>> featureKey
     ) {
         super(ctx, featureKey);
     }
-
 
     @Override
     public ForSimpleBlock block(BlockStateProvider provider) {
@@ -35,12 +38,10 @@ public class ForSimpleBlockImpl extends FeatureConfiguratorImpl<SimpleBlockConfi
         return this;
     }
 
-
     @Override
     public ForSimpleBlock block(Block block) {
         return block(BlockStateProvider.simple(block));
     }
-
 
     @Override
     public ForSimpleBlock block(BlockState state) {
@@ -72,12 +73,15 @@ public class ForSimpleBlockImpl extends FeatureConfiguratorImpl<SimpleBlockConfi
     }
 
     public static class Key extends ConfiguredFeatureKey<ForSimpleBlock> {
-        public Key(ResourceLocation id) {
+
+        public Key(Identifier id) {
             super(id);
         }
 
         @Override
-        public ForSimpleBlock bootstrap(@NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx) {
+        public ForSimpleBlock bootstrap(
+            @NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx
+        ) {
             return new ForSimpleBlockImpl(ctx, key);
         }
     }

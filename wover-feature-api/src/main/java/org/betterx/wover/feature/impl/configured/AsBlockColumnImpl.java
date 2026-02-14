@@ -1,13 +1,11 @@
 package org.betterx.wover.feature.impl.configured;
 
-import org.betterx.wover.block.api.BlockProperties;
-import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
-import org.betterx.wover.feature.api.configured.configurators.AsBlockColumn;
-
+import java.util.LinkedList;
+import java.util.List;
 import net.minecraft.core.Direction;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -20,21 +18,31 @@ import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.BlockColumnConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStateProvider;
-
-import java.util.LinkedList;
-import java.util.List;
+import org.betterx.wover.block.api.BlockProperties;
+import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
+import org.betterx.wover.feature.api.configured.configurators.AsBlockColumn;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class AsBlockColumnImpl extends FeatureConfiguratorImpl<BlockColumnConfiguration, BlockColumnFeature> implements org.betterx.wover.feature.api.configured.configurators.AsBlockColumn {
-    private final List<BlockColumnConfiguration.Layer> layers = new LinkedList<>();
+public class AsBlockColumnImpl
+    extends FeatureConfiguratorImpl<
+        BlockColumnConfiguration,
+        BlockColumnFeature
+    >
+    implements
+        org.betterx.wover.feature.api.configured.configurators.AsBlockColumn
+{
+
+    private final List<BlockColumnConfiguration.Layer> layers =
+        new LinkedList<>();
     private Direction direction = Direction.UP;
-    private BlockPredicate allowedPlacement = BlockPredicate.ONLY_IN_AIR_PREDICATE;
+    private BlockPredicate allowedPlacement =
+        BlockPredicate.ONLY_IN_AIR_PREDICATE;
     private boolean prioritizeTip = false;
 
     AsBlockColumnImpl(
-            @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
-            @Nullable ResourceKey<ConfiguredFeature<?, ?>> key
+        @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
+        @Nullable ResourceKey<ConfiguredFeature<?, ?>> key
     ) {
         super(ctx, key);
     }
@@ -60,7 +68,10 @@ public class AsBlockColumnImpl extends FeatureConfiguratorImpl<BlockColumnConfig
     }
 
     @Override
-    public final AsBlockColumn addRandom(IntProvider height, BlockState... states) {
+    public final AsBlockColumn addRandom(
+        IntProvider height,
+        BlockState... states
+    ) {
         var builder = WeightedList.<BlockState>builder();
         for (BlockState state : states) builder.add(state, 1);
         return add(height, new WeightedStateProvider(builder.build()));
@@ -83,47 +94,100 @@ public class AsBlockColumnImpl extends FeatureConfiguratorImpl<BlockColumnConfig
     }
 
     @Override
-    public AsBlockColumn addTripleShape(BlockState state, IntProvider midHeight) {
-        return this
-                .add(1, state.setValue(BlockProperties.TRIPLE_SHAPE, BlockProperties.TripleShape.BOTTOM))
-                .add(midHeight, state.setValue(BlockProperties.TRIPLE_SHAPE, BlockProperties.TripleShape.MIDDLE))
-                .add(1, state.setValue(BlockProperties.TRIPLE_SHAPE, BlockProperties.TripleShape.TOP));
+    public AsBlockColumn addTripleShape(
+        BlockState state,
+        IntProvider midHeight
+    ) {
+        return this.add(
+                1,
+                state.setValue(
+                    BlockProperties.TRIPLE_SHAPE,
+                    BlockProperties.TripleShape.BOTTOM
+                )
+            )
+            .add(
+                midHeight,
+                state.setValue(
+                    BlockProperties.TRIPLE_SHAPE,
+                    BlockProperties.TripleShape.MIDDLE
+                )
+            )
+            .add(
+                1,
+                state.setValue(
+                    BlockProperties.TRIPLE_SHAPE,
+                    BlockProperties.TripleShape.TOP
+                )
+            );
     }
 
     @Override
-    public AsBlockColumn addTripleShapeUpsideDown(BlockState state, IntProvider midHeight) {
-        return this
-                .add(1, state.setValue(BlockProperties.TRIPLE_SHAPE, BlockProperties.TripleShape.TOP))
-                .add(midHeight, state.setValue(BlockProperties.TRIPLE_SHAPE, BlockProperties.TripleShape.MIDDLE))
-                .add(1, state.setValue(BlockProperties.TRIPLE_SHAPE, BlockProperties.TripleShape.BOTTOM));
+    public AsBlockColumn addTripleShapeUpsideDown(
+        BlockState state,
+        IntProvider midHeight
+    ) {
+        return this.add(
+                1,
+                state.setValue(
+                    BlockProperties.TRIPLE_SHAPE,
+                    BlockProperties.TripleShape.TOP
+                )
+            )
+            .add(
+                midHeight,
+                state.setValue(
+                    BlockProperties.TRIPLE_SHAPE,
+                    BlockProperties.TripleShape.MIDDLE
+                )
+            )
+            .add(
+                1,
+                state.setValue(
+                    BlockProperties.TRIPLE_SHAPE,
+                    BlockProperties.TripleShape.BOTTOM
+                )
+            );
     }
 
     @Override
-    public AsBlockColumn addBottomShapeUpsideDown(BlockState state, IntProvider midHeight) {
-        return this
-                .add(midHeight, state.setValue(BlockProperties.BOTTOM, false))
-                .add(1, state.setValue(BlockProperties.BOTTOM, true));
+    public AsBlockColumn addBottomShapeUpsideDown(
+        BlockState state,
+        IntProvider midHeight
+    ) {
+        return this.add(
+            midHeight,
+            state.setValue(BlockProperties.BOTTOM, false)
+        ).add(1, state.setValue(BlockProperties.BOTTOM, true));
     }
 
     @Override
-    public AsBlockColumn addBottomShape(BlockState state, IntProvider midHeight) {
-        return this
-                .add(1, state.setValue(BlockProperties.BOTTOM, true))
-                .add(midHeight, state.setValue(BlockProperties.BOTTOM, false));
+    public AsBlockColumn addBottomShape(
+        BlockState state,
+        IntProvider midHeight
+    ) {
+        return this.add(1, state.setValue(BlockProperties.BOTTOM, true)).add(
+            midHeight,
+            state.setValue(BlockProperties.BOTTOM, false)
+        );
     }
 
     @Override
-    public AsBlockColumn addTopShapeUpsideDown(BlockState state, IntProvider midHeight) {
-        return this
-                .add(1, state.setValue(BlockProperties.TOP, true))
-                .add(midHeight, state.setValue(BlockProperties.TOP, false));
+    public AsBlockColumn addTopShapeUpsideDown(
+        BlockState state,
+        IntProvider midHeight
+    ) {
+        return this.add(1, state.setValue(BlockProperties.TOP, true)).add(
+            midHeight,
+            state.setValue(BlockProperties.TOP, false)
+        );
     }
 
     @Override
     public AsBlockColumn addTopShape(BlockState state, IntProvider midHeight) {
-        return this
-                .add(midHeight, state.setValue(BlockProperties.TOP, false))
-                .add(1, state.setValue(BlockProperties.TOP, true));
+        return this.add(
+            midHeight,
+            state.setValue(BlockProperties.TOP, false)
+        ).add(1, state.setValue(BlockProperties.TOP, true));
     }
 
     @Override
@@ -151,7 +215,12 @@ public class AsBlockColumnImpl extends FeatureConfiguratorImpl<BlockColumnConfig
 
     @Override
     public BlockColumnConfiguration createConfiguration() {
-        return new BlockColumnConfiguration(layers, direction, allowedPlacement, prioritizeTip);
+        return new BlockColumnConfiguration(
+            layers,
+            direction,
+            allowedPlacement,
+            prioritizeTip
+        );
     }
 
     @Override
@@ -160,12 +229,15 @@ public class AsBlockColumnImpl extends FeatureConfiguratorImpl<BlockColumnConfig
     }
 
     public static class Key extends ConfiguredFeatureKey<AsBlockColumn> {
-        public Key(ResourceLocation id) {
+
+        public Key(Identifier id) {
             super(id);
         }
 
         @Override
-        public AsBlockColumn bootstrap(@NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx) {
+        public AsBlockColumn bootstrap(
+            @NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx
+        ) {
             return new AsBlockColumnImpl(ctx, key);
         }
     }

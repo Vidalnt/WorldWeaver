@@ -1,10 +1,9 @@
 package org.betterx.wover.block.api;
 
-import org.betterx.wover.block.api.trait.*;
-import org.betterx.wover.block.impl.trait.BlockTraitImpl;
-import org.betterx.wover.item.api.BlockItemDefinition;
-import org.betterx.wover.item.api.VanillaBlockItemDefinition;
-
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
@@ -20,21 +19,29 @@ import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.LootTable;
-
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.ToIntFunction;
+import org.betterx.wover.block.api.trait.*;
+import org.betterx.wover.block.impl.trait.BlockTraitImpl;
+import org.betterx.wover.item.api.BlockItemDefinition;
+import org.betterx.wover.item.api.VanillaBlockItemDefinition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+public abstract class BlockDefinition<
+    B extends Block,
+    D extends BlockDefinition<B, D>
+> implements BlockTraitLookup {
 
-public abstract class BlockDefinition<B extends Block, D extends BlockDefinition<B, D>> implements BlockTraitLookup {
-    public interface BlockFactory<B extends Block, D extends BlockDefinition<B, D>> {
+    public interface BlockFactory<
+        B extends Block,
+        D extends BlockDefinition<B, D>
+    > {
         B createItem(D definition);
     }
 
-    public interface BlockItemDefinitionFactory<B extends Block, D extends BlockDefinition<B, D>> {
+    public interface BlockItemDefinitionFactory<
+        B extends Block,
+        D extends BlockDefinition<B, D>
+    > {
         BlockItemDefinition<?, ?> get(D definition, B sourceBlock);
     }
 
@@ -52,14 +59,17 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
 
     protected final BlockDefinition.BlockFactory<B, D> blockFactory;
 
-    protected @Nullable BlockItemDefinitionFactory<B, D> blockItemDefinitionSupplier;
+    protected @Nullable BlockItemDefinitionFactory<
+        B,
+        D
+    > blockItemDefinitionSupplier;
     protected BlockItem blockItem;
 
     protected BlockDefinition(
-            BlockRegistry registry,
-            String blockName,
-            BlockDefinition.BlockFactory<B, D> blockFactory,
-            BlockBehaviour.Properties properties
+        BlockRegistry registry,
+        String blockName,
+        BlockDefinition.BlockFactory<B, D> blockFactory,
+        BlockBehaviour.Properties properties
     ) {
         this.blockKey = registry.key(blockName);
         this.itemKey = registry.blockItemKey(blockKey);
@@ -70,35 +80,30 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
     }
 
     protected BlockDefinition(
-            BlockRegistry registry,
-            String blockName,
-            BlockDefinition.BlockFactory<B, D> blockFactory
+        BlockRegistry registry,
+        String blockName,
+        BlockDefinition.BlockFactory<B, D> blockFactory
     ) {
-        this(
-                registry,
-                blockName,
-                blockFactory,
-                BlockBehaviour.Properties.of()
-        );
+        this(registry, blockName, blockFactory, BlockBehaviour.Properties.of());
     }
 
     protected BlockDefinition(
-            BlockRegistry registry,
-            String blockName,
-            BlockDefinition.BlockFactory<B, D> blockFactory,
-            BlockBehaviour templateBlock
+        BlockRegistry registry,
+        String blockName,
+        BlockDefinition.BlockFactory<B, D> blockFactory,
+        BlockBehaviour templateBlock
     ) {
         this(
-                registry,
-                blockName,
-                blockFactory,
-                BlockBehaviour.Properties.ofFullCopy(templateBlock)
+            registry,
+            blockName,
+            blockFactory,
+            BlockBehaviour.Properties.ofFullCopy(templateBlock)
         );
     }
 
-    abstract protected void beforeBuild();
+    protected abstract void beforeBuild();
 
-    abstract protected @NotNull B beforeRegister(@NotNull B block);
+    protected abstract @NotNull B beforeRegister(@NotNull B block);
 
     protected B afterRegister(B block) {
         // Default implementation does nothing, can be overridden if needed
@@ -106,7 +111,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
     }
 
     public D withBlockItem(
-            @Nullable BlockItemDefinitionFactory<B, D> blockItemDefinitionSupplier
+        @Nullable BlockItemDefinitionFactory<B, D> blockItemDefinitionSupplier
     ) {
         this.blockItemDefinitionSupplier = blockItemDefinitionSupplier;
         return (D) this;
@@ -124,7 +129,9 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      * @return
      */
     @SuppressWarnings("unchecked")
-    protected @Nullable BlockItemDefinition<?, ?> getBlockItemDefinition(B sourceBlock) {
+    protected @Nullable BlockItemDefinition<?, ?> getBlockItemDefinition(
+        B sourceBlock
+    ) {
         if (blockItemDefinitionSupplier != null) {
             // If a custom BlockItemDefinitionFactory is provided, use it
             return blockItemDefinitionSupplier.get((D) this, sourceBlock);
@@ -143,38 +150,46 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
             for (var configuredTrait : this.traits) {
                 this.configurePropertiesUnchecked(configuredTrait);
 
-                final RuntimeBlockTrait<B, ?> runtimeTrait = this.forRuntimeUnchecked(configuredTrait);
+                final RuntimeBlockTrait<B, ?> runtimeTrait =
+                    this.forRuntimeUnchecked(configuredTrait);
                 if (runtimeTrait != null) {
                     // Collect runtime traits by their key
-                    runtimeTraits.computeIfAbsent(
-                            runtimeTrait.key(),
-                            k -> new ArrayList<>()
-                    ).add(runtimeTrait);
+                    runtimeTraits
+                        .computeIfAbsent(runtimeTrait.key(), k ->
+                            new ArrayList<>()
+                        )
+                        .add(runtimeTrait);
                 }
             }
         } else runtimeTraits = null;
 
         // Apply all property setters to the properties
-        for (Consumer<BlockBehaviour.Properties> propertySetter : this.propertySetters) {
+        for (Consumer<
+            BlockBehaviour.Properties
+        > propertySetter : this.propertySetters) {
             propertySetter.accept(this.properties);
         }
 
         B block = blockFactory.createItem((D) this);
 
         // If runtime traits were collected, set them on the block
-        if (runtimeTraits != null && !runtimeTraits.isEmpty() && block instanceof BlockWithTraits<?>) {
+        if (
+            runtimeTraits != null &&
+            !runtimeTraits.isEmpty() &&
+            block instanceof BlockWithTraits<?>
+        ) {
             ((BlockWithTraits<B>) block).wover_setTraits(runtimeTraits);
         }
 
         return block;
     }
 
-
     @SuppressWarnings("unchecked")
     public final B buildAndRegister() {
         B block = this.beforeRegister(this.build());
 
-        final TagKey<Block>[] tags = this.tags == null ? null : this.tags.toArray(TagKey[]::new);
+        final TagKey<Block>[] tags =
+            this.tags == null ? null : this.tags.toArray(TagKey[]::new);
         this.registry.register(this.blockKey, block, tags);
 
         // If traits are defined, call afterBlockRegistration for each trait
@@ -203,9 +218,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
     }
 
     @SuppressWarnings("unchecked")
-    public D addTrait(
-            @Nullable List<BlockTrait<?, ?>> traits
-    ) {
+    public D addTrait(@Nullable List<BlockTrait<?, ?>> traits) {
         if (traits == null || traits.isEmpty()) {
             // Skip null or empty trait lists
             return (D) this;
@@ -224,9 +237,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      * @return This configuration instance for method chaining
      */
     @SuppressWarnings("unchecked")
-    public D addTrait(
-            @Nullable BlockTrait<?, ?> trait
-    ) {
+    public D addTrait(@Nullable BlockTrait<?, ?> trait) {
         if (trait == null) {
             // Skip null traits
             return (D) this;
@@ -235,17 +246,23 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
         if (this.traits == null) this.traits = new LinkedList<>();
 
         if (trait.keepLatestOnly()) {
-            this.traits = this.traits.stream().filter(t -> !t.is(trait.key())).toList();
+            this.traits = this.traits.stream()
+                .filter(t -> !t.is(trait.key()))
+                .toList();
         }
         this.traits.add((BlockTrait<? super B, ?>) trait);
         return (D) this;
     }
 
-    public D addTrait(@NotNull BlockTraitBuilder.WithDefault<?, ?> traitBuilder) {
+    public D addTrait(
+        @NotNull BlockTraitBuilder.WithDefault<?, ?> traitBuilder
+    ) {
         return this.addTrait(traitBuilder.withDefault());
     }
 
-    public D addTrait(@NotNull BlockTraitBuilder.WithDefaults<?, ?> traitBuilder) {
+    public D addTrait(
+        @NotNull BlockTraitBuilder.WithDefaults<?, ?> traitBuilder
+    ) {
         return this.addTrait(traitBuilder.withDefault());
     }
 
@@ -330,7 +347,6 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
         return this.itemTags.toArray(new TagKey[0]);
     }
 
-
     /**
      * Gets the underlying BlockTrait.Properties object used by this configuration.
      * This provides direct access to the properties for advanced configuration scenarios.
@@ -343,15 +359,13 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
 
     // Helper methods to handle generic type casting
     @SuppressWarnings("unchecked")
-    private void configurePropertiesUnchecked(
-            BlockTrait<? super B, ?> trait
-    ) {
+    private void configurePropertiesUnchecked(BlockTrait<? super B, ?> trait) {
         ((BlockTrait<B, ?>) trait).configure((D) this);
     }
 
     @SuppressWarnings("unchecked")
     private RuntimeBlockTrait<B, ?> forRuntimeUnchecked(
-            BlockTrait<? super B, ?> trait
+        BlockTrait<? super B, ?> trait
     ) {
         // Cast is safe because the trait can work with B (since B extends the super type)
         return (RuntimeBlockTrait<B, ?>) trait.forRuntime();
@@ -359,8 +373,8 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
 
     @SuppressWarnings("unchecked")
     private void afterBlockRegistrationUnchecked(
-            B block,
-            BlockTrait<? super B, ?> trait
+        B block,
+        BlockTrait<? super B, ?> trait
     ) {
         // Cast is safe because the trait can work with B (since B extends the super type)
         ((BlockTrait<B, ?>) trait).afterBlockRegistration(block, (D) this);
@@ -368,7 +382,8 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
 
     // **********************************************************************
     // Redirect all BlockTrait.Properties methods (except setId) to this.properties
-    protected List<Consumer<BlockBehaviour.Properties>> propertySetters = new LinkedList<>();
+    protected List<Consumer<BlockBehaviour.Properties>> propertySetters =
+        new LinkedList<>();
 
     /**
      * Sets the map color for this block using a dye color.
@@ -378,7 +393,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D mapColor(DyeColor dyeColor) {
-        propertySetters.add((properties) -> properties.mapColor(dyeColor));
+        propertySetters.add(properties -> properties.mapColor(dyeColor));
         return (D) this;
     }
 
@@ -390,7 +405,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D mapColor(MapColor mapColor) {
-        propertySetters.add((properties) -> properties.mapColor(mapColor));
+        propertySetters.add(properties -> properties.mapColor(mapColor));
         return (D) this;
     }
 
@@ -402,7 +417,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D mapColor(Function<BlockState, MapColor> function) {
-        propertySetters.add((properties) -> properties.mapColor(function));
+        propertySetters.add(properties -> properties.mapColor(function));
         return (D) this;
     }
 
@@ -413,7 +428,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D noCollission() {
-        propertySetters.add((properties) -> properties.noCollission());
+        propertySetters.add(properties -> properties.noCollission());
         return (D) this;
     }
 
@@ -424,7 +439,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D noOcclusion() {
-        propertySetters.add((properties) -> properties.noOcclusion());
+        propertySetters.add(properties -> properties.noOcclusion());
         return (D) this;
     }
 
@@ -436,7 +451,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D friction(float friction) {
-        propertySetters.add((properties) -> properties.friction(friction));
+        propertySetters.add(properties -> properties.friction(friction));
         return (D) this;
     }
 
@@ -448,7 +463,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D speedFactor(float speedFactor) {
-        propertySetters.add((properties) -> properties.speedFactor(speedFactor));
+        propertySetters.add(properties -> properties.speedFactor(speedFactor));
         return (D) this;
     }
 
@@ -460,7 +475,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D jumpFactor(float jumpFactor) {
-        propertySetters.add((properties) -> properties.jumpFactor(jumpFactor));
+        propertySetters.add(properties -> properties.jumpFactor(jumpFactor));
         return (D) this;
     }
 
@@ -472,7 +487,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D sound(SoundType soundType) {
-        propertySetters.add((properties) -> properties.sound(soundType));
+        propertySetters.add(properties -> properties.sound(soundType));
         return (D) this;
     }
 
@@ -484,7 +499,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D lightLevel(ToIntFunction<BlockState> lightLevel) {
-        propertySetters.add((properties) -> properties.lightLevel(lightLevel));
+        propertySetters.add(properties -> properties.lightLevel(lightLevel));
         return (D) this;
     }
 
@@ -497,7 +512,9 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D strength(float destroyTime, float explosionResistance) {
-        propertySetters.add((properties) -> properties.strength(destroyTime, explosionResistance));
+        propertySetters.add(properties ->
+            properties.strength(destroyTime, explosionResistance)
+        );
         return (D) this;
     }
 
@@ -508,7 +525,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D instabreak() {
-        propertySetters.add((properties) -> properties.instabreak());
+        propertySetters.add(properties -> properties.instabreak());
         return (D) this;
     }
 
@@ -520,7 +537,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D strength(float strength) {
-        propertySetters.add((properties) -> properties.strength(strength));
+        propertySetters.add(properties -> properties.strength(strength));
         return (D) this;
     }
 
@@ -531,7 +548,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D randomTicks() {
-        propertySetters.add((properties) -> properties.randomTicks());
+        propertySetters.add(properties -> properties.randomTicks());
         return (D) this;
     }
 
@@ -542,7 +559,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D dynamicShape() {
-        propertySetters.add((properties) -> properties.dynamicShape());
+        propertySetters.add(properties -> properties.dynamicShape());
         return (D) this;
     }
 
@@ -553,7 +570,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D noLootTable() {
-        propertySetters.add((properties) -> properties.noLootTable());
+        propertySetters.add(properties -> properties.noLootTable());
         return (D) this;
     }
 
@@ -565,7 +582,9 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D overrideLootTable(Optional<ResourceKey<LootTable>> lootTable) {
-        propertySetters.add((properties) -> properties.overrideLootTable(lootTable));
+        propertySetters.add(properties ->
+            properties.overrideLootTable(lootTable)
+        );
         return (D) this;
     }
 
@@ -580,7 +599,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
     @Deprecated(forRemoval = true)
     @SuppressWarnings("unchecked")
     public D ignitedByLava() {
-        propertySetters.add((properties) -> properties.ignitedByLava());
+        propertySetters.add(properties -> properties.ignitedByLava());
         return (D) this;
     }
 
@@ -591,7 +610,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D liquid() {
-        propertySetters.add((properties) -> properties.liquid());
+        propertySetters.add(properties -> properties.liquid());
         return (D) this;
     }
 
@@ -602,7 +621,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D forceSolidOn() {
-        propertySetters.add((properties) -> properties.forceSolidOn());
+        propertySetters.add(properties -> properties.forceSolidOn());
         return (D) this;
     }
 
@@ -615,7 +634,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
     @Deprecated
     @SuppressWarnings("unchecked")
     public D forceSolidOff() {
-        propertySetters.add((properties) -> properties.forceSolidOff());
+        propertySetters.add(properties -> properties.forceSolidOff());
         return (D) this;
     }
 
@@ -627,7 +646,9 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D pushReaction(PushReaction pushReaction) {
-        propertySetters.add((properties) -> properties.pushReaction(pushReaction));
+        propertySetters.add(properties ->
+            properties.pushReaction(pushReaction)
+        );
         return (D) this;
     }
 
@@ -638,7 +659,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D air() {
-        propertySetters.add((properties) -> properties.air());
+        propertySetters.add(properties -> properties.air());
         return (D) this;
     }
 
@@ -649,8 +670,10 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      * @return This configuration instance for method chaining
      */
     @SuppressWarnings("unchecked")
-    public D isValidSpawn(BlockBehaviour.StateArgumentPredicate<EntityType<?>> predicate) {
-        propertySetters.add((properties) -> properties.isValidSpawn(predicate));
+    public D isValidSpawn(
+        BlockBehaviour.StateArgumentPredicate<EntityType<?>> predicate
+    ) {
+        propertySetters.add(properties -> properties.isValidSpawn(predicate));
         return (D) this;
     }
 
@@ -662,7 +685,9 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D isRedstoneConductor(BlockBehaviour.StatePredicate predicate) {
-        propertySetters.add((properties) -> properties.isRedstoneConductor(predicate));
+        propertySetters.add(properties ->
+            properties.isRedstoneConductor(predicate)
+        );
         return (D) this;
     }
 
@@ -674,7 +699,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D isSuffocating(BlockBehaviour.StatePredicate predicate) {
-        propertySetters.add((properties) -> properties.isSuffocating(predicate));
+        propertySetters.add(properties -> properties.isSuffocating(predicate));
         return (D) this;
     }
 
@@ -686,7 +711,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D isViewBlocking(BlockBehaviour.StatePredicate predicate) {
-        propertySetters.add((properties) -> properties.isViewBlocking(predicate));
+        propertySetters.add(properties -> properties.isViewBlocking(predicate));
         return (D) this;
     }
 
@@ -698,7 +723,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D hasPostProcess(BlockBehaviour.StatePredicate predicate) {
-        propertySetters.add((properties) -> properties.hasPostProcess(predicate));
+        propertySetters.add(properties -> properties.hasPostProcess(predicate));
         return (D) this;
     }
 
@@ -710,7 +735,9 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D emissiveRendering(BlockBehaviour.StatePredicate predicate) {
-        propertySetters.add((properties) -> properties.emissiveRendering(predicate));
+        propertySetters.add(properties ->
+            properties.emissiveRendering(predicate)
+        );
         return (D) this;
     }
 
@@ -721,7 +748,9 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D requiresCorrectToolForDrops() {
-        propertySetters.add((properties) -> properties.requiresCorrectToolForDrops());
+        propertySetters.add(properties ->
+            properties.requiresCorrectToolForDrops()
+        );
         return (D) this;
     }
 
@@ -733,7 +762,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D destroyTime(float destroyTime) {
-        propertySetters.add((properties) -> properties.destroyTime(destroyTime));
+        propertySetters.add(properties -> properties.destroyTime(destroyTime));
         return (D) this;
     }
 
@@ -745,7 +774,9 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D explosionResistance(float explosionResistance) {
-        propertySetters.add((properties) -> properties.explosionResistance(explosionResistance));
+        propertySetters.add(properties ->
+            properties.explosionResistance(explosionResistance)
+        );
         return (D) this;
     }
 
@@ -757,7 +788,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D offsetType(BlockBehaviour.OffsetType offsetType) {
-        propertySetters.add((properties) -> properties.offsetType(offsetType));
+        propertySetters.add(properties -> properties.offsetType(offsetType));
         return (D) this;
     }
 
@@ -768,7 +799,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D noTerrainParticles() {
-        propertySetters.add((properties) -> properties.noTerrainParticles());
+        propertySetters.add(properties -> properties.noTerrainParticles());
         return (D) this;
     }
 
@@ -780,7 +811,9 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D requiredFeatures(FeatureFlag... featureFlags) {
-        propertySetters.add((properties) -> properties.requiredFeatures(featureFlags));
+        propertySetters.add(properties ->
+            properties.requiredFeatures(featureFlags)
+        );
         return (D) this;
     }
 
@@ -792,7 +825,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D instrument(NoteBlockInstrument instrument) {
-        propertySetters.add((properties) -> properties.instrument(instrument));
+        propertySetters.add(properties -> properties.instrument(instrument));
         return (D) this;
     }
 
@@ -803,7 +836,7 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D replaceable() {
-        propertySetters.add((properties) -> properties.replaceable());
+        propertySetters.add(properties -> properties.replaceable());
         return (D) this;
     }
 
@@ -815,7 +848,9 @@ public abstract class BlockDefinition<B extends Block, D extends BlockDefinition
      */
     @SuppressWarnings("unchecked")
     public D overrideDescription(String descriptionKey) {
-        propertySetters.add((properties) -> properties.overrideDescription(descriptionKey));
+        propertySetters.add(properties ->
+            properties.overrideDescription(descriptionKey)
+        );
         return (D) this;
     }
 

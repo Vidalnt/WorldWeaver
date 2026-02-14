@@ -1,15 +1,16 @@
 package org.betterx.wover.recipe.impl;
 
-import org.betterx.wover.recipe.api.BaseRecipeBuilder;
-import org.betterx.wover.recipe.api.RecipeBuilder;
-
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -17,15 +18,15 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+import org.betterx.wover.recipe.api.BaseRecipeBuilder;
+import org.betterx.wover.recipe.api.RecipeBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class BaseRecipeBuilderImpl<I extends BaseRecipeBuilder<I>> implements BaseRecipeBuilder<I> {
+public abstract class BaseRecipeBuilderImpl<
+    I extends BaseRecipeBuilder<I>
+> implements BaseRecipeBuilder<I> {
+
     public interface UnlockCriterionFactory {
         Criterion<?> createCriterion(RecipeBuilder.Context context);
     }
@@ -36,11 +37,17 @@ public abstract class BaseRecipeBuilderImpl<I extends BaseRecipeBuilder<I>> impl
     protected final @NotNull ItemStack output;
     protected final @NotNull ResourceKey<Recipe<?>> key;
 
-    protected BaseRecipeBuilderImpl(@NotNull ResourceLocation key, @NotNull ItemLike output) {
+    protected BaseRecipeBuilderImpl(
+        @NotNull Identifier key,
+        @NotNull ItemLike output
+    ) {
         this(key, new ItemStack(output, 1));
     }
 
-    protected BaseRecipeBuilderImpl(@NotNull ResourceLocation key, @NotNull ItemStack output) {
+    protected BaseRecipeBuilderImpl(
+        @NotNull Identifier key,
+        @NotNull ItemStack output
+    ) {
         this.key = ResourceKey.create(Registries.RECIPE, key);
         this.category = RecipeCategory.MISC;
         this.output = output;
@@ -77,7 +84,7 @@ public abstract class BaseRecipeBuilderImpl<I extends BaseRecipeBuilder<I>> impl
     protected final Map<String, UnlockCriterionFactory> unlocks;
 
     public I unlocks(String name, Criterion<?> criterion) {
-        this.unlocks.put(name, (provider) -> criterion);
+        this.unlocks.put(name, provider -> criterion);
         return (I) this;
     }
 
@@ -94,26 +101,28 @@ public abstract class BaseRecipeBuilderImpl<I extends BaseRecipeBuilder<I>> impl
      * @param items {@link Item}s or {@link Block}s that will unlock the recipe.
      */
     public I unlocks(String name, ItemLike... items) {
-        return unlocks(name, InventoryChangeTrigger.TriggerInstance.hasItems(items));
+        return unlocks(
+            name,
+            InventoryChangeTrigger.TriggerInstance.hasItems(items)
+        );
     }
 
     public I unlockedBy(Ingredient ingredient) {
-        ingredient.items().forEach(item -> {
-
-            this.unlocks(
+        ingredient
+            .items()
+            .forEach(item -> {
+                this.unlocks(
                     "has_" + item.value().getDescriptionId(),
-                    (context) -> context.has(item.value())
-            );
-
-        });
+                    context -> context.has(item.value())
+                );
+            });
 
         return (I) this;
     }
 
     public I unlockedBy(ItemLike item) {
-        this.unlocks(
-                "has_" + item.asItem().getDescriptionId(),
-                (context) -> context.has(item.asItem())
+        this.unlocks("has_" + item.asItem().getDescriptionId(), context ->
+            context.has(item.asItem())
         );
 
         return (I) this;
@@ -121,8 +130,11 @@ public abstract class BaseRecipeBuilderImpl<I extends BaseRecipeBuilder<I>> impl
 
     public I unlockedBy(TagKey<Item> tag) {
         this.unlocks(
-                "has_tag_" + tag.location().getNamespace() + "_" + tag.location().getPath(),
-                (context) -> context.has(tag)
+            "has_tag_" +
+                tag.location().getNamespace() +
+                "_" +
+                tag.location().getPath(),
+            context -> context.has(tag)
         );
 
         return (I) this;
@@ -138,14 +150,17 @@ public abstract class BaseRecipeBuilderImpl<I extends BaseRecipeBuilder<I>> impl
      * @param items {@link Item}s or {@link Block}s that will unlock the recipe.
      */
     public I unlockedBy(ItemLike... items) {
-        String name = "has_" +
-                Arrays.stream(items)
-                      .map(block -> (block instanceof Block)
-                              ? BuiltInRegistries.BLOCK.getKey((Block) block)
-                              : BuiltInRegistries.ITEM.getKey((Item) block))
-                      .filter(id -> id != null)
-                      .map(id -> id.getPath())
-                      .collect(Collectors.joining("_"));
+        String name =
+            "has_" +
+            Arrays.stream(items)
+                .map(block ->
+                    (block instanceof Block)
+                        ? BuiltInRegistries.BLOCK.getKey((Block) block)
+                        : BuiltInRegistries.ITEM.getKey((Item) block)
+                )
+                .filter(id -> id != null)
+                .map(id -> id.getPath())
+                .collect(Collectors.joining("_"));
         if (name.length() > 45) name = name.substring(0, 42);
         return unlocks(name, items);
     }
@@ -160,9 +175,9 @@ public abstract class BaseRecipeBuilderImpl<I extends BaseRecipeBuilder<I>> impl
      */
     public I unlockedBy(ItemStack... stacks) {
         ItemLike[] items = Arrays.stream(stacks)
-                                 .filter(stack -> stack.getCount() > 0)
-                                 .map(stack -> (ItemLike) stack.getItem())
-                                 .toArray(ItemLike[]::new);
+            .filter(stack -> stack.getCount() > 0)
+            .map(stack -> (ItemLike) stack.getItem())
+            .toArray(ItemLike[]::new);
 
         return unlockedBy(items);
     }
@@ -181,7 +196,6 @@ public abstract class BaseRecipeBuilderImpl<I extends BaseRecipeBuilder<I>> impl
         }
     }
 
-
     //for testing
     //campfireCooking, stonecutting
     protected Ingredient ingredient;
@@ -190,17 +204,17 @@ public abstract class BaseRecipeBuilderImpl<I extends BaseRecipeBuilder<I>> impl
     protected int experience;
     protected int cookingTime;
 
-//    public void build() {
-//        var builder = ShapedRecipeBuilder.shaped(category, output.getItem(), output.getCount()).showNotification();
-//        ShapelessRecipeBuilder.shapeless(category, output.getItem(), output.getCount());
-//        SimpleCookingRecipeBuilder.campfireCooking(ingredient, category, output.getItem(), experience, cookingTime);
-//        SimpleCookingRecipeBuilder.blasting(ingredient, category, output.getItem(), experience, cookingTime);
-//        SimpleCookingRecipeBuilder.smelting(ingredient, category, output.getItem(), experience, cookingTime);
-//        SimpleCookingRecipeBuilder.smoking(ingredient, category, output.getItem(), experience, cookingTime);
-//
-//        SingleItemRecipeBuilder.stonecutting(ingredient, category, output.getItem(), output.getCount());
-//
-//        SmithingTransformRecipeBuilder.smithing(ingredient, ingredient, ingredient, category, output.getItem());
-//        SmithingTrimRecipeBuilder.smithingTrim(ingredient, ingredient, ingredient, category);
-//    }
+    //    public void build() {
+    //        var builder = ShapedRecipeBuilder.shaped(category, output.getItem(), output.getCount()).showNotification();
+    //        ShapelessRecipeBuilder.shapeless(category, output.getItem(), output.getCount());
+    //        SimpleCookingRecipeBuilder.campfireCooking(ingredient, category, output.getItem(), experience, cookingTime);
+    //        SimpleCookingRecipeBuilder.blasting(ingredient, category, output.getItem(), experience, cookingTime);
+    //        SimpleCookingRecipeBuilder.smelting(ingredient, category, output.getItem(), experience, cookingTime);
+    //        SimpleCookingRecipeBuilder.smoking(ingredient, category, output.getItem(), experience, cookingTime);
+    //
+    //        SingleItemRecipeBuilder.stonecutting(ingredient, category, output.getItem(), output.getCount());
+    //
+    //        SmithingTransformRecipeBuilder.smithing(ingredient, ingredient, ingredient, category, output.getItem());
+    //        SmithingTrimRecipeBuilder.smithingTrim(ingredient, ingredient, ingredient, category);
+    //    }
 }

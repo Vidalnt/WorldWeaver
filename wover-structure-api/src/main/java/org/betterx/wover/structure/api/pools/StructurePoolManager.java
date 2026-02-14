@@ -1,24 +1,22 @@
 package org.betterx.wover.structure.api.pools;
 
-import org.betterx.wover.events.api.Event;
-import org.betterx.wover.events.api.types.OnBootstrapRegistry;
-import org.betterx.wover.structure.api.sets.StructureSetKey;
-import org.betterx.wover.structure.impl.pools.StructurePoolManagerImpl;
-
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
-
+import org.betterx.wover.events.api.Event;
+import org.betterx.wover.events.api.types.OnBootstrapRegistry;
+import org.betterx.wover.structure.api.sets.StructureSetKey;
+import org.betterx.wover.structure.impl.pools.StructurePoolManagerImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class StructurePoolManager {
-    private StructurePoolManager() {
-    }
+
+    private StructurePoolManager() {}
 
     /**
      * The event that is fired when the Registry for a {@link StructureTemplatePool}
@@ -26,18 +24,18 @@ public class StructurePoolManager {
      * in the data generator whenever possible (see WoverRegistryProvider)
      * for Details.
      */
-    public static final Event<OnBootstrapRegistry<StructureTemplatePool>> BOOTSTRAP_TEMPLATE_POOLS =
-            StructurePoolManagerImpl.BOOTSTRAP_TEMPLATE_POOLS;
+    public static final Event<
+        OnBootstrapRegistry<StructureTemplatePool>
+    > BOOTSTRAP_TEMPLATE_POOLS =
+        StructurePoolManagerImpl.BOOTSTRAP_TEMPLATE_POOLS;
 
     /**
-     * Creates a {@link StructurePoolKey} for the given {@link ResourceLocation}.
+     * Creates a {@link StructurePoolKey} for the given {@link Identifier}.
      *
      * @param location The location of the {@link StructureTemplatePool}
      * @return The {@link StructureSetKey}
      */
-    public static StructurePoolKey createKey(
-            ResourceLocation location
-    ) {
+    public static StructurePoolKey createKey(Identifier location) {
         return new StructurePoolKey(location);
     }
 
@@ -52,8 +50,8 @@ public class StructurePoolManager {
      */
     @Nullable
     public static Holder<StructureTemplatePool> getHolder(
-            @Nullable HolderGetter<StructureTemplatePool> getter,
-            @NotNull ResourceKey<StructureTemplatePool> key
+        @Nullable HolderGetter<StructureTemplatePool> getter,
+        @NotNull ResourceKey<StructureTemplatePool> key
     ) {
         return StructurePoolManagerImpl.getHolder(getter, key);
     }
@@ -70,9 +68,12 @@ public class StructurePoolManager {
      */
     @Nullable
     public static Holder<StructureTemplatePool> getHolder(
-            @Nullable BootstrapContext<?> context,
-            @NotNull ResourceKey<StructureTemplatePool> key
+        @Nullable BootstrapContext<?> context,
+        @NotNull ResourceKey<StructureTemplatePool> key
     ) {
-        return StructurePoolManagerImpl.getHolder(context.lookup(Registries.TEMPLATE_POOL), key);
+        return StructurePoolManagerImpl.getHolder(
+            context.lookup(Registries.TEMPLATE_POOL),
+            key
+        );
     }
 }

@@ -1,39 +1,45 @@
 package org.betterx.wover.feature.impl.configured;
 
+import java.util.LinkedList;
+import java.util.List;
+import net.minecraft.core.Holder;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import org.betterx.wover.feature.api.Features;
 import org.betterx.wover.feature.api.configured.ConfiguredFeatureKey;
 import org.betterx.wover.feature.api.configured.configurators.AsSequence;
 import org.betterx.wover.feature.api.features.SequenceFeature;
 import org.betterx.wover.feature.api.features.config.SequenceFeatureConfig;
 import org.betterx.wover.feature.api.placed.PlacedFeatureKey;
-
-import net.minecraft.core.Holder;
-import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-
-import java.util.LinkedList;
-import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class AsSequenceImpl extends FeatureConfiguratorImpl<SequenceFeatureConfig, SequenceFeature> implements AsSequence {
+public class AsSequenceImpl
+    extends FeatureConfiguratorImpl<SequenceFeatureConfig, SequenceFeature>
+    implements AsSequence
+{
+
     private final List<Holder<PlacedFeature>> features = new LinkedList<>();
 
     AsSequenceImpl(
-            @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
-            @Nullable ResourceKey<ConfiguredFeature<?, ?>> key
+        @Nullable BootstrapContext<ConfiguredFeature<?, ?>> ctx,
+        @Nullable ResourceKey<ConfiguredFeature<?, ?>> key
     ) {
         super(ctx, key);
     }
 
     @Override
     public AsSequence add(PlacedFeatureKey featureKey) {
-        features.add(featureKey.getHolder(bootstrapContext != null
-                ? bootstrapContext
-                : getTransitiveBootstrapContext()));
+        features.add(
+            featureKey.getHolder(
+                bootstrapContext != null
+                    ? bootstrapContext
+                    : getTransitiveBootstrapContext()
+            )
+        );
         return this;
     }
 
@@ -57,12 +63,15 @@ public class AsSequenceImpl extends FeatureConfiguratorImpl<SequenceFeatureConfi
     }
 
     public static class Key extends ConfiguredFeatureKey<AsSequence> {
-        public Key(ResourceLocation id) {
+
+        public Key(Identifier id) {
             super(id);
         }
 
         @Override
-        public AsSequence bootstrap(@NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx) {
+        public AsSequence bootstrap(
+            @NotNull BootstrapContext<ConfiguredFeature<?, ?>> ctx
+        ) {
             return new AsSequenceImpl(ctx, key);
         }
     }

@@ -1,12 +1,10 @@
 package org.betterx.wover.surface.api.conditions;
 
-import org.betterx.wover.surface.impl.conditions.MaterialConditionRegistryImpl;
-
 import com.mojang.serialization.MapCodec;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.SurfaceRules;
-
+import org.betterx.wover.surface.impl.conditions.MaterialConditionRegistryImpl;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -14,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
  * {@link net.minecraft.core.registries.BuiltInRegistries#MATERIAL_CONDITION}.
  */
 public class ConditionManager {
+
     /**
      * Registers a condition.
      *
@@ -21,11 +20,17 @@ public class ConditionManager {
      * @param codec    the codec of the condition
      * @return the new key of the condition
      */
-    public static ResourceKey<MapCodec<? extends SurfaceRules.ConditionSource>> register(
-            ResourceLocation location,
-            MapCodec<? extends SurfaceRules.ConditionSource> codec
+    public static ResourceKey<
+        MapCodec<? extends SurfaceRules.ConditionSource>
+    > register(
+        Identifier location,
+        MapCodec<? extends SurfaceRules.ConditionSource> codec
     ) {
-        return MaterialConditionRegistryImpl.register(MaterialConditionRegistryImpl.createKey(location), codec, false);
+        return MaterialConditionRegistryImpl.register(
+            MaterialConditionRegistryImpl.createKey(location),
+            codec,
+            false
+        );
     }
 
     /**
@@ -35,9 +40,11 @@ public class ConditionManager {
      * @param codec the codec of the condition
      * @return the same key that was passed in
      */
-    public static ResourceKey<MapCodec<? extends SurfaceRules.ConditionSource>> register(
-            ResourceKey<MapCodec<? extends SurfaceRules.ConditionSource>> key,
-            MapCodec<? extends SurfaceRules.ConditionSource> codec
+    public static ResourceKey<
+        MapCodec<? extends SurfaceRules.ConditionSource>
+    > register(
+        ResourceKey<MapCodec<? extends SurfaceRules.ConditionSource>> key,
+        MapCodec<? extends SurfaceRules.ConditionSource> codec
     ) {
         return MaterialConditionRegistryImpl.register(key, codec, false);
     }
@@ -49,7 +56,9 @@ public class ConditionManager {
      * @return the key
      */
     @NotNull
-    public static ResourceKey<MapCodec<? extends SurfaceRules.ConditionSource>> createKey(ResourceLocation location) {
+    public static ResourceKey<
+        MapCodec<? extends SurfaceRules.ConditionSource>
+    > createKey(Identifier location) {
         return MaterialConditionRegistryImpl.createKey(location);
     }
 }

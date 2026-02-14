@@ -4,7 +4,7 @@ import org.betterx.wover.tag.api.TagManager;
 
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -59,7 +59,7 @@ public class CustomArmorMaterial {
      * @param materialLocation The resource location identifying this armor material
      * @return A new builder instance
      */
-    public static CustomArmorMaterial.Builder start(ResourceLocation materialLocation) {
+    public static CustomArmorMaterial.Builder start(Identifier materialLocation) {
         return new CustomArmorMaterial.Builder(materialLocation);
     }
 
@@ -71,7 +71,7 @@ public class CustomArmorMaterial {
      * All properties are validated before the material is built.
      */
     public static class Builder {
-        private final ResourceLocation location;
+        private final Identifier location;
         private final EnumMap<ArmorType, Integer> defense;
         private int enchantmentValue;
         private Holder<SoundEvent> equipSound;
@@ -81,7 +81,7 @@ public class CustomArmorMaterial {
         private TagKey<Item> repairIngredient;
         private ResourceKey<EquipmentAsset> assetId;
 
-        private Builder(ResourceLocation materialLocation) {
+        private Builder(Identifier materialLocation) {
             this.location = materialLocation;
             this.defense = new EnumMap<>(ArmorType.class);
         }
