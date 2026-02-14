@@ -39,7 +39,7 @@ public class StructureKeys {
      * @return The {@link StructureSetKey}
      */
     public static StructureSetKey set(StructureKey<?, ?, ?> structure) {
-        return set(structure.key().location());
+        return set(structure.key().identifier());
     }
 
     /**

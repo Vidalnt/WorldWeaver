@@ -26,7 +26,7 @@ public interface WoverBiomeBuilder<B extends BiomeBuilder<B>> {
     B vertical(boolean vertical);
 
     static BiomeKey<Wrapped> wrappedKey(@NotNull ResourceKey<Biome> key) {
-        return new WrappedWoverBiomeKeyImpl(key.location());
+        return new WrappedWoverBiomeKeyImpl(key.identifier());
     }
 
     static BiomeKey<WoverBiome> biomeKey(@NotNull Identifier location) {

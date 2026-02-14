@@ -1,14 +1,15 @@
 package org.betterx.wover.structure.impl.builders;
 
-import org.betterx.wover.structure.api.StructureKey;
-import org.betterx.wover.structure.api.builders.JigsawBuilder;
-import org.betterx.wover.structure.api.pools.StructurePoolKey;
+import static net.minecraft.world.level.levelgen.structure.structures.JigsawStructure.DEFAULT_DIMENSION_PADDING;
+import static net.minecraft.world.level.levelgen.structure.structures.JigsawStructure.DEFAULT_LIQUID_SETTINGS;
 
+import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.heightproviders.ConstantHeight;
@@ -18,17 +19,21 @@ import net.minecraft.world.level.levelgen.structure.pools.DimensionPadding;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding;
 import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
+import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure.MaxDistance; // <- NUEVO IMPORT
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
-
-import static net.minecraft.world.level.levelgen.structure.structures.JigsawStructure.DEFAULT_DIMENSION_PADDING;
-import static net.minecraft.world.level.levelgen.structure.structures.JigsawStructure.DEFAULT_LIQUID_SETTINGS;
-
-import java.util.List;
-import java.util.Optional;
+import org.betterx.wover.structure.api.StructureKey;
+import org.betterx.wover.structure.api.builders.JigsawBuilder;
+import org.betterx.wover.structure.api.pools.StructurePoolKey;
 
 public class JigsawBuilderImpl
-        extends BaseStructureBuilderImpl<JigsawStructure, JigsawBuilder, StructureKey.Jigsaw>
-        implements JigsawBuilder {
+    extends BaseStructureBuilderImpl<
+        JigsawStructure,
+        JigsawBuilder,
+        StructureKey.Jigsaw
+    >
+    implements JigsawBuilder
+{
+
     private Holder<StructureTemplatePool> startPool;
     private Optional<Identifier> startJigsawName;
     private int maxDepth;
@@ -42,11 +47,10 @@ public class JigsawBuilderImpl
     private DimensionPadding dimensionPadding;
 
     public JigsawBuilderImpl(
-            StructureKey.Jigsaw key,
-            BootstrapContext<Structure> context
+        StructureKey.Jigsaw key,
+        BootstrapContext<Structure> context
     ) {
         super(key, context);
-
         this.dimensionPadding = DEFAULT_DIMENSION_PADDING;
         this.liquidSettings = DEFAULT_LIQUID_SETTINGS;
         this.maxDepth = 6;
@@ -113,7 +117,9 @@ public class JigsawBuilderImpl
 
     @Override
     public JigsawBuilder startPool(ResourceKey<StructureTemplatePool> pool) {
-        this.startPool = context.lookup(Registries.TEMPLATE_POOL).getOrThrow(pool);
+        this.startPool = context
+            .lookup(Registries.TEMPLATE_POOL)
+            .getOrThrow(pool);
         return this;
     }
 
@@ -123,7 +129,9 @@ public class JigsawBuilderImpl
     }
 
     @Override
-    public JigsawBuilder addAliasBindings(List<PoolAliasBinding> aliasBindings) {
+    public JigsawBuilder addAliasBindings(
+        List<PoolAliasBinding> aliasBindings
+    ) {
         if (this.aliasBindings == null) this.aliasBindings = aliasBindings;
         else {
             this.aliasBindings.addAll(aliasBindings);
@@ -139,23 +147,23 @@ public class JigsawBuilderImpl
     @Override
     protected Structure build() {
         if (startPool == null) {
-            throw new IllegalStateException("Start pool must be set for " + key.key().location());
+            throw new IllegalStateException(
+                "Start pool must be set for " + key.key().identifier()
+            );
         }
 
         return new JigsawStructure(
-                buildSettings(),
-                startPool,
-                startJigsawName,
-                maxDepth,
-                startHeight,
-                useExpansionHack,
-                projectStartToHeightmap,
-                maxDistanceFromCenter,
-                aliasBindings == null ? List.of() : aliasBindings,
-                dimensionPadding,
-                liquidSettings
+            buildSettings(),
+            startPool,
+            startJigsawName,
+            maxDepth,
+            startHeight,
+            useExpansionHack,
+            projectStartToHeightmap,
+            new JigsawStructure.MaxDistance(maxDistanceFromCenter),
+            aliasBindings == null ? List.of() : aliasBindings,
+            dimensionPadding,
+            liquidSettings
         );
     }
-
-
 }

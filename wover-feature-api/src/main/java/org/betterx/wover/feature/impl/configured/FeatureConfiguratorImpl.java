@@ -165,7 +165,7 @@ public abstract class FeatureConfiguratorImpl<
         if (config == null) {
             throw new IllegalStateException(
                 "Feature configuration for " +
-                    key.location() +
+                    key.identifier() +
                     " can not be null!"
             );
         }
@@ -175,7 +175,7 @@ public abstract class FeatureConfiguratorImpl<
 
     void throwStateError(String message) {
         throw new IllegalStateException(
-            message + (key == null ? "" : ("(" + key.location() + ")"))
+            message + (key == null ? "" : ("(" + key.identifier() + ")"))
         );
     }
 }

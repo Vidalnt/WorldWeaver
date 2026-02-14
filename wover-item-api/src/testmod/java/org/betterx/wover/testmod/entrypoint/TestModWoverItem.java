@@ -86,7 +86,7 @@ public class TestModWoverItem implements ModInitializer {
                     new EnchantmentAttributeEffect(
                         OBSIDIAN_BLOCK_BREAK_SPEED.unwrapKey()
                             .orElseThrow()
-                            .location(),
+                            .identifier(),
                         OBSIDIAN_BLOCK_BREAK_SPEED,
                         new LevelBasedValue.Lookup(
                             List.of(6f, 12f, 18f),

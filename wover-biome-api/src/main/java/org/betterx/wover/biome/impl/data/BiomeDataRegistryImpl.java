@@ -66,7 +66,7 @@ public class BiomeDataRegistryImpl {
         ResourceKey<Biome> key,
         Function<ResourceKey<Biome>, BiomeData> defaultFactory
     ) {
-        final ResourceKey<BiomeData> dataKey = createKey(key.location());
+        final ResourceKey<BiomeData> dataKey = createKey(key.identifier());
         if (registry != null) {
             final Optional<BiomeData> oData = registry.getOptional(dataKey);
 

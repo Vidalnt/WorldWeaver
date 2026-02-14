@@ -45,7 +45,7 @@ public class FeatureManagerImpl {
         F res = register(key, feature.apply(codec));
         if (LegacyHelper.isLegacyEnabled()) {
             register(
-                LegacyHelper.BCLIB_CORE.convertNamespace(key.location()),
+                LegacyHelper.BCLIB_CORE.convertNamespace(key.identifier()),
                 feature.apply(codec)
             );
         }

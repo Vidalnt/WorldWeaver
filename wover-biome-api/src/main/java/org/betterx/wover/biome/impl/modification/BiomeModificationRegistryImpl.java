@@ -117,7 +117,7 @@ public class BiomeModificationRegistryImpl {
             if (context == null) {
                 LibWoverBiome.C.log.warn(
                     "Failed to get biome context for {}",
-                    biomeKey.location()
+                    biomeKey.identifier()
                 );
                 continue;
             }

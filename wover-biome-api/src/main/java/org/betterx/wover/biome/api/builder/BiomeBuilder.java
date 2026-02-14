@@ -1,16 +1,10 @@
 package org.betterx.wover.biome.api.builder;
 
 import de.ambertation.wunderlib.ui.ColorHelper;
-import org.betterx.wover.biome.api.BiomeKey;
-import org.betterx.wover.biome.api.data.BiomeData;
-import org.betterx.wover.biome.impl.builder.BiomeSurfaceRuleBuilderImpl;
-import org.betterx.wover.feature.api.placed.BasePlacedFeatureKey;
-import org.betterx.wover.feature.api.placed.PlacedFeatureManager;
-import org.betterx.wover.structure.api.StructureKey;
-import org.betterx.wover.surface.api.AssignedSurfaceRule;
-import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
-import org.betterx.wover.tag.api.predefined.CommonBiomeTags;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.Registries;
@@ -22,6 +16,13 @@ import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.attribute.AmbientAdditionsSettings;
+import net.minecraft.world.attribute.AmbientMoodSettings;
+import net.minecraft.world.attribute.AmbientParticle;
+import net.minecraft.world.attribute.AmbientSounds;
+import net.minecraft.world.attribute.BackgroundMusic;
+import net.minecraft.world.attribute.EnvironmentAttribute;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.biome.*;
 import net.minecraft.world.level.block.Block;
@@ -29,14 +30,20 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
+import org.betterx.wover.biome.api.BiomeKey;
+import org.betterx.wover.biome.api.data.BiomeData;
+import org.betterx.wover.biome.impl.builder.BiomeSurfaceRuleBuilderImpl;
+import org.betterx.wover.feature.api.placed.BasePlacedFeatureKey;
+import org.betterx.wover.feature.api.placed.PlacedFeatureManager;
+import org.betterx.wover.structure.api.StructureKey;
+import org.betterx.wover.surface.api.AssignedSurfaceRule;
+import org.betterx.wover.tag.api.event.context.TagBootstrapContext;
+import org.betterx.wover.tag.api.predefined.CommonBiomeTags;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
+
     public final BiomeKey<B> key;
     public final BiomeBootstrapContext bootstrapContext;
 
@@ -49,7 +56,8 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
     public static int DEFAULT_NETHER_WATER_COLOR = DEFAULT_WATER_COLOR;
     public static int DEFAULT_END_WATER_COLOR = DEFAULT_WATER_COLOR;
     public static int DEFAULT_NETHER_WATER_FOG_COLOR = 0x050533;
-    public static int DEFAULT_END_WATER_FOG_COLOR = DEFAULT_NETHER_WATER_FOG_COLOR;
+    public static int DEFAULT_END_WATER_FOG_COLOR =
+        DEFAULT_NETHER_WATER_FOG_COLOR;
     public static int DEFAULT_FOG_COLOR = 0xC0D8FF;
     public static int DEFAULT_END_FOG_COLOR = 0xA080A0;
     public static int DEFAULT_END_SKY_COLOR = 0x000000;
@@ -58,14 +66,15 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
     public static float DEFAULT_NETHER_WETNESS = 0.0f;
     public static float DEFAULT_END_WETNESS = 0.5f;
 
-    protected final List<Climate.ParameterPoint> parameters = new ArrayList<>(1);
+    protected final List<Climate.ParameterPoint> parameters = new ArrayList<>(
+        1
+    );
 
     protected @Nullable TagKey<Biome> intendedPlacement = null;
     protected float fogDensity;
     protected final List<TagKey<Biome>> biomeTags = new ArrayList<>(2);
 
     private @Nullable BiomeSurfaceRuleBuilderImpl<B> surfaceBuilder;
-
 
     protected BiomeBuilder(BiomeBootstrapContext context, BiomeKey<B> key) {
         this.key = key;
@@ -79,7 +88,9 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
     }
 
     public B addNetherClimate(float temperature, float humidity, float offset) {
-        return addClimate(Climate.parameters(temperature, humidity, 0, 0, 0, 0, offset));
+        return addClimate(
+            Climate.parameters(temperature, humidity, 0, 0, 0, 0, offset)
+        );
     }
 
     public B addNetherClimate(float temperature, float humidity) {
@@ -117,8 +128,9 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
     @SafeVarargs
     public final B tag(TagKey<Biome>... tags) {
         for (TagKey<Biome> biomeTag : tags) {
-            if (biomeTag != null && !biomeTags.contains(biomeTag))
-                biomeTags.add(biomeTag);
+            if (
+                biomeTag != null && !biomeTags.contains(biomeTag)
+            ) biomeTags.add(biomeTag);
         }
 
         return (B) this;
@@ -156,7 +168,9 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
 
     public abstract void registerBiome(BootstrapContext<Biome> biomeContext);
 
-    public abstract void registerBiomeData(BootstrapContext<BiomeData> dataContext);
+    public abstract void registerBiomeData(
+        BootstrapContext<BiomeData> dataContext
+    );
 
     public void registerBiomeTags(TagBootstrapContext<Biome> context) {
         for (TagKey<Biome> biomeTag : biomeTags) {
@@ -164,40 +178,92 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
         }
     }
 
-    public void registerSurfaceRule(@NotNull BootstrapContext<AssignedSurfaceRule> context) {
+    public void registerSurfaceRule(
+        @NotNull BootstrapContext<AssignedSurfaceRule> context
+    ) {
         if (surfaceBuilder != null) {
             surfaceBuilder.register(context);
         }
     }
 
-    public abstract static class VanillaBuilder<B extends VanillaBuilder<B>> extends BiomeBuilder<B> {
+    public abstract static class VanillaBuilder<
+        B extends VanillaBuilder<B>
+    > extends BiomeBuilder<B> {
+
         private Biome.TemperatureModifier temperatureModifier;
         private float downfall;
         private float temperature;
         private boolean hasPrecipitation;
-        private final BiomeSpecialEffects.Builder fx = new BiomeSpecialEffects.Builder();
+
+        // BiomeSpecialEffects fields (only what's left in the record)
+        private int waterColor = DEFAULT_WATER_COLOR;
+        private Optional<Integer> foliageColorOverride = Optional.empty();
+        private Optional<Integer> dryFoliageColorOverride = Optional.empty();
+        private Optional<Integer> grassColorOverride = Optional.empty();
+        private BiomeSpecialEffects.GrassColorModifier grassColorModifier =
+            BiomeSpecialEffects.GrassColorModifier.NONE;
+
         private final BiomeGenerationSettings.Builder generationSettings;
-        private final MobSpawnSettings.Builder mobSpawnSettings = new MobSpawnSettings.Builder();
+        private final MobSpawnSettings.Builder mobSpawnSettings =
+            new MobSpawnSettings.Builder();
 
-        protected VanillaBuilder(BiomeBootstrapContext context, BiomeKey<B> key) {
+        // Store environment attributes that will be set on the Biome.BiomeBuilder
+        private final List<AttributeSetter<?>> environmentAttributes =
+            new ArrayList<>();
+
+        // Helper class to store attribute setters
+        private static class AttributeSetter<Value> {
+
+            final EnvironmentAttribute<Value> attribute;
+            final Value value;
+
+            AttributeSetter(
+                EnvironmentAttribute<Value> attribute,
+                Value value
+            ) {
+                this.attribute = attribute;
+                this.value = value;
+            }
+
+            void apply(Biome.BiomeBuilder builder) {
+                builder.setAttribute(attribute, value);
+            }
+        }
+
+        protected <Value> B setAttribute(
+            EnvironmentAttribute<Value> attribute,
+            Value value
+        ) {
+            environmentAttributes.add(new AttributeSetter<>(attribute, value));
+            return (B) this;
+        }
+
+        protected VanillaBuilder(
+            BiomeBootstrapContext context,
+            BiomeKey<B> key
+        ) {
             super(context, key);
-
             this.temperatureModifier = Biome.TemperatureModifier.NONE;
             this.downfall = 0.f;
             this.temperature = 0.5f;
             this.hasPrecipitation = false;
 
             generationSettings = new BiomeGenerationSettings.Builder(
-                    bootstrapContext.lookup(Registries.PLACED_FEATURE),
-                    bootstrapContext.lookup(Registries.CONFIGURED_CARVER)
+                bootstrapContext.lookup(Registries.PLACED_FEATURE),
+                bootstrapContext.lookup(Registries.CONFIGURED_CARVER)
             );
 
-            fx.fogColor(DEFAULT_FOG_COLOR);
-            fx.waterFogColor(DEFAULT_WATER_FOG_COLOR);
-            fx.waterColor(DEFAULT_WATER_COLOR);
-            fx.skyColor(calculateSkyColor(temperature));
+            // Set default environment attributes
+            setAttribute(EnvironmentAttributes.FOG_COLOR, DEFAULT_FOG_COLOR);
+            setAttribute(
+                EnvironmentAttributes.WATER_FOG_COLOR,
+                DEFAULT_WATER_FOG_COLOR
+            );
+            setAttribute(
+                EnvironmentAttributes.SKY_COLOR,
+                calculateSkyColor(temperature)
+            );
         }
-
 
         public B hasPrecipitation(boolean bl) {
             this.hasPrecipitation = bl;
@@ -214,7 +280,9 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
             return (B) this;
         }
 
-        public B temperatureAdjustment(Biome.TemperatureModifier temperatureModifier) {
+        public B temperatureAdjustment(
+            Biome.TemperatureModifier temperatureModifier
+        ) {
             this.temperatureModifier = temperatureModifier;
             return (B) this;
         }
@@ -229,21 +297,32 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
 
         public B feature(BasePlacedFeatureKey<?> feature) {
             generationSettings.addFeature(
-                    feature.getDecoration(),
-                    feature.getHolder(bootstrapContext.lookup(Registries.PLACED_FEATURE))
+                feature.getDecoration(),
+                feature.getHolder(
+                    bootstrapContext.lookup(Registries.PLACED_FEATURE)
+                )
             );
             return (B) this;
         }
 
-        public B feature(GenerationStep.Decoration decoration, ResourceKey<PlacedFeature> feature) {
+        public B feature(
+            GenerationStep.Decoration decoration,
+            ResourceKey<PlacedFeature> feature
+        ) {
             generationSettings.addFeature(
-                    decoration,
-                    PlacedFeatureManager.getHolder(bootstrapContext.lookup(Registries.PLACED_FEATURE), feature)
+                decoration,
+                PlacedFeatureManager.getHolder(
+                    bootstrapContext.lookup(Registries.PLACED_FEATURE),
+                    feature
+                )
             );
             return (B) this;
         }
 
-        public B feature(GenerationStep.Decoration decoration, Holder<PlacedFeature> feature) {
+        public B feature(
+            GenerationStep.Decoration decoration,
+            Holder<PlacedFeature> feature
+        ) {
             generationSettings.addFeature(decoration, feature);
             return (B) this;
         }
@@ -279,7 +358,9 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
 
         public B carver(ResourceKey<ConfiguredWorldCarver<?>> carver) {
             generationSettings.addCarver(
-                    bootstrapContext.lookup(Registries.CONFIGURED_CARVER).getOrThrow(carver)
+                bootstrapContext
+                    .lookup(Registries.CONFIGURED_CARVER)
+                    .getOrThrow(carver)
             );
             return (B) this;
         }
@@ -290,13 +371,11 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
         }
 
         public B fogColor(int color) {
-            fx.fogColor(color);
-            return (B) this;
+            return setAttribute(EnvironmentAttributes.FOG_COLOR, color);
         }
 
         public B fogColor(int r, int g, int b) {
-            fx.fogColor(ColorHelper.color(r, g, b));
-            return (B) this;
+            return fogColor(ColorHelper.color(r, g, b));
         }
 
         public B waterColor(int r, int g, int b) {
@@ -304,7 +383,7 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
         }
 
         public B waterColor(int color) {
-            fx.waterColor(color);
+            this.waterColor = color;
             return (B) this;
         }
 
@@ -313,8 +392,7 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
         }
 
         public B waterFogColor(int color) {
-            fx.waterFogColor(color);
-            return (B) this;
+            return setAttribute(EnvironmentAttributes.WATER_FOG_COLOR, color);
         }
 
         public B skyColor(int r, int g, int b) {
@@ -322,8 +400,7 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
         }
 
         public B skyColor(int color) {
-            fx.skyColor(color);
-            return (B) this;
+            return setAttribute(EnvironmentAttributes.SKY_COLOR, color);
         }
 
         public B foliageColorOverride(int r, int g, int b) {
@@ -331,7 +408,7 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
         }
 
         public B foliageColorOverride(int color) {
-            fx.foliageColorOverride(color);
+            this.foliageColorOverride = Optional.of(color);
             return (B) this;
         }
 
@@ -340,12 +417,14 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
         }
 
         public B grassColorOverride(int color) {
-            fx.grassColorOverride(color);
+            this.grassColorOverride = Optional.of(color);
             return (B) this;
         }
 
-        public B grassColorModifier(BiomeSpecialEffects.GrassColorModifier grassColorModifier) {
-            fx.grassColorModifier(grassColorModifier);
+        public B grassColorModifier(
+            BiomeSpecialEffects.GrassColorModifier grassColorModifier
+        ) {
+            this.grassColorModifier = grassColorModifier;
             return (B) this;
         }
 
@@ -365,7 +444,6 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
             return grassColorOverride(color).foliageColorOverride(color);
         }
 
-
         /**
          * Adds ambient particles .
          *
@@ -374,41 +452,74 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
          * @return this builder.
          */
         public B particles(ParticleOptions particle, float probability) {
-            particles(new AmbientParticleSettings(particle, probability));
+            particles(new AmbientParticle(particle, probability));
             return (B) this;
         }
 
-        public B particles(AmbientParticleSettings ambientParticleSettings) {
-            fx.ambientParticle(ambientParticleSettings);
-            return (B) this;
+        public B particles(AmbientParticle ambientParticle) {
+            return setAttribute(
+                EnvironmentAttributes.AMBIENT_PARTICLES,
+                List.of(ambientParticle)
+            );
         }
-
 
         public B loop(Holder<SoundEvent> holder) {
-            fx.ambientLoopSound(holder);
-            return (B) this;
+            return setAttribute(
+                EnvironmentAttributes.AMBIENT_SOUNDS,
+                new AmbientSounds(
+                    Optional.of(holder),
+                    Optional.empty(),
+                    List.of()
+                )
+            );
         }
 
         public B mood(AmbientMoodSettings ambientMoodSettings) {
-            fx.ambientMoodSound(ambientMoodSettings);
-            return (B) this;
+            return setAttribute(
+                EnvironmentAttributes.AMBIENT_SOUNDS,
+                new AmbientSounds(
+                    Optional.empty(),
+                    Optional.of(ambientMoodSettings),
+                    List.of()
+                )
+            );
         }
 
         public B mood(Holder<SoundEvent> mood) {
             return mood(mood, 6000, 8, 2.0F);
         }
 
-        public B mood(Holder<SoundEvent> mood, int tickDelay, int blockSearchExtent, float soundPositionOffset) {
-            return mood(new AmbientMoodSettings(mood, tickDelay, blockSearchExtent, soundPositionOffset));
+        public B mood(
+            Holder<SoundEvent> mood,
+            int tickDelay,
+            int blockSearchExtent,
+            float soundPositionOffset
+        ) {
+            return mood(
+                new AmbientMoodSettings(
+                    mood,
+                    tickDelay,
+                    blockSearchExtent,
+                    soundPositionOffset
+                )
+            );
         }
 
         public B additions(AmbientAdditionsSettings ambientAdditionsSettings) {
-            fx.ambientAdditionsSound(ambientAdditionsSettings);
-            return (B) this;
+            return setAttribute(
+                EnvironmentAttributes.AMBIENT_SOUNDS,
+                new AmbientSounds(
+                    Optional.empty(),
+                    Optional.empty(),
+                    List.of(ambientAdditionsSettings)
+                )
+            );
         }
 
         public B additions(Holder<SoundEvent> additions, float intensity) {
-            return additions(new AmbientAdditionsSettings(additions, intensity));
+            return additions(
+                new AmbientAdditionsSettings(additions, intensity)
+            );
         }
 
         public B additions(Holder<SoundEvent> additions) {
@@ -416,7 +527,12 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
         }
 
         public B music(@Nullable Music music) {
-            fx.backgroundMusic(music);
+            if (music != null) {
+                setAttribute(
+                    EnvironmentAttributes.BACKGROUND_MUSIC,
+                    new BackgroundMusic(music)
+                );
+            }
             return (B) this;
         }
 
@@ -424,8 +540,15 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
             return music(music, 600, 2400, true);
         }
 
-        public B music(Holder<SoundEvent> music, int minDelay, int maxDelay, boolean replaceCurrentMusic) {
-            return music(new Music(music, minDelay, maxDelay, replaceCurrentMusic));
+        public B music(
+            Holder<SoundEvent> music,
+            int minDelay,
+            int maxDelay,
+            boolean replaceCurrentMusic
+        ) {
+            return music(
+                new Music(music, minDelay, maxDelay, replaceCurrentMusic)
+            );
         }
 
         public final B isNetherBiome() {
@@ -452,16 +575,29 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
             return biomeTypeTag(CommonBiomeTags.IS_SMALL_END_ISLAND);
         }
 
-        public B spawn(EntityType<?> entityType, int weight, int minGroupCount, int maxGroupCount) {
+        public B spawn(
+            EntityType<?> entityType,
+            int weight,
+            int minGroupCount,
+            int maxGroupCount
+        ) {
             mobSpawnSettings.addSpawn(
-                    entityType.getCategory(),
-                    weight,
-                    new MobSpawnSettings.SpawnerData(entityType, minGroupCount, maxGroupCount)
+                entityType.getCategory(),
+                weight,
+                new MobSpawnSettings.SpawnerData(
+                    entityType,
+                    minGroupCount,
+                    maxGroupCount
+                )
             );
             return (B) this;
         }
 
-        public B addMobCharge(EntityType<?> entityType, double energyBudget, double charge) {
+        public B addMobCharge(
+            EntityType<?> entityType,
+            double energyBudget,
+            double charge
+        ) {
             mobSpawnSettings.addMobCharge(entityType, energyBudget, charge);
             return (B) this;
         }
@@ -479,8 +615,9 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
             biomeContext.register(key.key, buildBiome());
         }
 
-        public abstract void registerBiomeData(BootstrapContext<BiomeData> dataContext);
-
+        public abstract void registerBiomeData(
+            BootstrapContext<BiomeData> dataContext
+        );
 
         protected Biome buildBiome() {
             Biome.BiomeBuilder vanillaBuilder = new Biome.BiomeBuilder();
@@ -491,21 +628,43 @@ public abstract class BiomeBuilder<B extends BiomeBuilder<B>> {
             vanillaBuilder.temperatureAdjustment(temperatureModifier);
 
             vanillaBuilder.generationSettings(generationSettings.build());
-            vanillaBuilder.specialEffects(fx.build());
             vanillaBuilder.mobSpawnSettings(mobSpawnSettings.build());
+
+            // Apply all environment attributes
+            for (AttributeSetter<?> setter : environmentAttributes) {
+                setter.apply(vanillaBuilder);
+            }
+
+            // Build BiomeSpecialEffects as a record
+            BiomeSpecialEffects specialEffects = new BiomeSpecialEffects(
+                waterColor,
+                foliageColorOverride,
+                dryFoliageColorOverride,
+                grassColorOverride,
+                grassColorModifier
+            );
+            vanillaBuilder.specialEffects(specialEffects);
 
             return vanillaBuilder.build();
         }
     }
 
     public abstract static class Vanilla extends VanillaBuilder<Vanilla> {
-        protected Vanilla(BiomeBootstrapContext context, BiomeKey<Vanilla> key) {
+
+        protected Vanilla(
+            BiomeBootstrapContext context,
+            BiomeKey<Vanilla> key
+        ) {
             super(context, key);
         }
     }
 
     public abstract static class Wrapped extends BiomeBuilder<Wrapped> {
-        protected Wrapped(BiomeBootstrapContext context, BiomeKey<Wrapped> key) {
+
+        protected Wrapped(
+            BiomeBootstrapContext context,
+            BiomeKey<Wrapped> key
+        ) {
             super(context, key);
         }
     }

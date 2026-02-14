@@ -427,8 +427,8 @@ public abstract class BlockDefinition<
      * @return This configuration instance for method chaining
      */
     @SuppressWarnings("unchecked")
-    public D noCollission() {
-        propertySetters.add(properties -> properties.noCollission());
+    public D noCollision() {
+        propertySetters.add(properties -> properties.noCollision());
         return (D) this;
     }
 

@@ -111,7 +111,7 @@ public class PlacedFeatureManager {
         ConfiguredFeatureKey<B> configuredFeatureKey
     ) {
         return new PlacedConfiguredFeatureKeyImpl(
-            configuredFeatureKey.key.location(),
+            configuredFeatureKey.key.identifier(),
             configuredFeatureKey
         );
     }

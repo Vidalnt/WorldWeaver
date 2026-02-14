@@ -152,7 +152,7 @@ public class ModelTraitLibrary {
             );
             ItemModel.Unbaked itemModelUnbaked = ItemModelUtils.specialModel(
                 itemModel,
-                new ChestSpecialRenderer.Unbaked(key.location())
+                new ChestSpecialRenderer.Unbaked(key.identifier())
             );
             generator.vanillaGenerator.itemModelOutput.accept(
                 chestItem,

@@ -1,9 +1,8 @@
 package org.betterx.wover.structure.api.sets;
 
-import org.betterx.wover.structure.api.StructureKey;
-import org.betterx.wover.structure.api.builders.BaseStructureBuilder;
-import org.betterx.wover.util.Pair;
-
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Vec3i;
@@ -19,29 +18,36 @@ import net.minecraft.world.level.levelgen.structure.placement.ConcentricRingsStr
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadType;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import org.betterx.wover.structure.api.StructureKey;
+import org.betterx.wover.structure.api.builders.BaseStructureBuilder;
+import org.betterx.wover.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class StructureSetBuilder {
+
     @NotNull
     private final ResourceKey<StructureSet> key;
+
     @NotNull
     private final BootstrapContext<StructureSet> context;
 
-    private final List<Pair<ResourceKey<Structure>, Integer>> structures = new LinkedList<>();
+    private final List<Pair<ResourceKey<Structure>, Integer>> structures =
+        new LinkedList<>();
     private StructurePlacement placement;
 
-
-    StructureSetBuilder(@NotNull ResourceKey<StructureSet> key, @NotNull BootstrapContext<StructureSet> context) {
+    StructureSetBuilder(
+        @NotNull ResourceKey<StructureSet> key,
+        @NotNull BootstrapContext<StructureSet> context
+    ) {
         this.key = key;
         this.context = context;
     }
 
-    public StructureSetBuilder addStructure(ResourceKey<Structure> structure, int weight) {
+    public StructureSetBuilder addStructure(
+        ResourceKey<Structure> structure,
+        int weight
+    ) {
         structures.add(new Pair<>(structure, weight));
         return this;
     }
@@ -50,21 +56,27 @@ public class StructureSetBuilder {
         return addStructure(structure, 1);
     }
 
-    public <S extends Structure, T extends BaseStructureBuilder<S, T>, K extends StructureKey<S, T, K>> StructureSetBuilder addStructure(
-            K structure,
-            int weight
-    ) {
+    public <
+        S extends Structure,
+        T extends BaseStructureBuilder<S, T>,
+        K extends StructureKey<S, T, K>
+    > StructureSetBuilder addStructure(K structure, int weight) {
         return addStructure(structure.key(), weight);
     }
 
-    public <S extends Structure, T extends BaseStructureBuilder<S, T>, K extends StructureKey<S, T, K>> StructureSetBuilder addStructure(
-            K structure
-    ) {
+    public <
+        S extends Structure,
+        T extends BaseStructureBuilder<S, T>,
+        K extends StructureKey<S, T, K>
+    > StructureSetBuilder addStructure(K structure) {
         return addStructure(structure, 1);
     }
 
     public StructureSetBuilder randomPlacement(int spacing, int seperation) {
-        return randomPlacement().spacing(spacing).separation(seperation).finishPlacement();
+        return randomPlacement()
+            .spacing(spacing)
+            .separation(seperation)
+            .finishPlacement();
     }
 
     public RandomSpreadStructurePlacementBuilder randomPlacement() {
@@ -79,7 +91,6 @@ public class StructureSetBuilder {
         this.placement = p;
         return this;
     }
-
 
     /**
      * Registers the {@link StructureSet} with the currently active
@@ -108,30 +119,47 @@ public class StructureSetBuilder {
 
     private StructureSet build() {
         if (structures.isEmpty()) {
-            throw new IllegalStateException("StructureSet " + key.location() + " must contain at least one structure");
+            throw new IllegalStateException(
+                "StructureSet " +
+                    key.identifier() +
+                    " must contain at least one structure"
+            );
         }
         if (placement == null) {
-            throw new IllegalStateException("StructureSet " + key.location() + " define a placement");
-        }
-
-        final HolderGetter<Structure> structureRegistry = context.lookup(Registries.STRUCTURE);
-
-        if (structures.size() == 1) {
-            final Holder<Structure> holder = structureRegistry.getOrThrow(structures.get(0).first);
-            return new StructureSet(holder, placement);
-        } else {
-            return new StructureSet(
-                    structures.stream()
-                              .map(p -> StructureSet.entry(structureRegistry.getOrThrow(p.first), p.second))
-                              .toList(),
-                    placement
+            throw new IllegalStateException(
+                "StructureSet " + key.identifier() + " define a placement"
             );
         }
 
+        final HolderGetter<Structure> structureRegistry = context.lookup(
+            Registries.STRUCTURE
+        );
 
+        if (structures.size() == 1) {
+            final Holder<Structure> holder = structureRegistry.getOrThrow(
+                structures.get(0).first
+            );
+            return new StructureSet(holder, placement);
+        } else {
+            return new StructureSet(
+                structures
+                    .stream()
+                    .map(p ->
+                        StructureSet.entry(
+                            structureRegistry.getOrThrow(p.first),
+                            p.second
+                        )
+                    )
+                    .toList(),
+                placement
+            );
+        }
     }
 
-    public abstract class StructurePlacementBuilder<R extends StructurePlacementBuilder<R>> {
+    public abstract class StructurePlacementBuilder<
+        R extends StructurePlacementBuilder<R>
+    > {
+
         protected Vec3i locateOffset;
         protected StructurePlacement.FrequencyReductionMethod frequencyReductionMethod;
         protected float frequency;
@@ -147,7 +175,9 @@ public class StructureSetBuilder {
         }
 
         @NotNull
-        public R frequencyReductionMethod(@NotNull StructurePlacement.FrequencyReductionMethod method) {
+        public R frequencyReductionMethod(
+            @NotNull StructurePlacement.FrequencyReductionMethod method
+        ) {
             this.frequencyReductionMethod = method;
             return (R) this;
         }
@@ -165,27 +195,40 @@ public class StructureSetBuilder {
         }
 
         @NotNull
-        public R exclusionZone(@Nullable StructurePlacement.ExclusionZone exclusionZone) {
-            this.exclusionZone = exclusionZone == null ? Optional.empty() : Optional.of(exclusionZone);
+        public R exclusionZone(
+            @Nullable StructurePlacement.ExclusionZone exclusionZone
+        ) {
+            this.exclusionZone =
+                exclusionZone == null
+                    ? Optional.empty()
+                    : Optional.of(exclusionZone);
             return (R) this;
         }
 
-        protected StructurePlacementBuilder(@NotNull ResourceKey<StructureSet> baseKey) {
+        protected StructurePlacementBuilder(
+            @NotNull ResourceKey<StructureSet> baseKey
+        ) {
             locateOffset = Vec3i.ZERO;
-            frequencyReductionMethod = StructurePlacement.FrequencyReductionMethod.DEFAULT;
+            frequencyReductionMethod =
+                StructurePlacement.FrequencyReductionMethod.DEFAULT;
             frequency = 1.0f;
             exclusionZone = Optional.empty();
 
-            salt = Math.abs(baseKey.location().hashCode());
+            salt = Math.abs(baseKey.identifier().hashCode());
         }
     }
 
-    public class RandomSpreadStructurePlacementBuilder extends StructurePlacementBuilder<RandomSpreadStructurePlacementBuilder> {
+    public class RandomSpreadStructurePlacementBuilder
+        extends StructurePlacementBuilder<RandomSpreadStructurePlacementBuilder>
+    {
+
         protected int spacing;
         protected int separation;
         protected RandomSpreadType spreadType;
 
-        RandomSpreadStructurePlacementBuilder(@NotNull ResourceKey<StructureSet> baseKey) {
+        RandomSpreadStructurePlacementBuilder(
+            @NotNull ResourceKey<StructureSet> baseKey
+        ) {
             super(baseKey);
             spacing = 32;
             separation = 8;
@@ -199,20 +242,25 @@ public class StructureSetBuilder {
         }
 
         @NotNull
-        public RandomSpreadStructurePlacementBuilder separation(int separation) {
+        public RandomSpreadStructurePlacementBuilder separation(
+            int separation
+        ) {
             this.separation = separation;
             return this;
         }
 
         @NotNull
-        public RandomSpreadStructurePlacementBuilder spreadType(@NotNull RandomSpreadType spreadType) {
+        public RandomSpreadStructurePlacementBuilder spreadType(
+            @NotNull RandomSpreadType spreadType
+        ) {
             this.spreadType = spreadType;
             return this;
         }
 
         @Override
         public StructureSetBuilder finishPlacement() {
-            return StructureSetBuilder.this.setPlacement(new RandomSpreadStructurePlacement(
+            return StructureSetBuilder.this.setPlacement(
+                new RandomSpreadStructurePlacement(
                     locateOffset,
                     frequencyReductionMethod,
                     frequency,
@@ -221,22 +269,30 @@ public class StructureSetBuilder {
                     spacing,
                     separation,
                     spreadType
-            ));
+                )
+            );
         }
     }
 
-    public class ConcentricRingsStructurePlacementBuilder extends StructurePlacementBuilder<ConcentricRingsStructurePlacementBuilder> {
+    public class ConcentricRingsStructurePlacementBuilder
+        extends StructurePlacementBuilder<
+            ConcentricRingsStructurePlacementBuilder
+        >
+    {
+
         protected int distance;
         protected int spread;
         protected int count;
+
         @NotNull
         protected TagKey<Biome> preferredBiomes;
+
         @NotNull
         private final BootstrapContext<StructureSet> context;
 
         ConcentricRingsStructurePlacementBuilder(
-                @NotNull BootstrapContext<StructureSet> context,
-                @NotNull ResourceKey<StructureSet> baseKey
+            @NotNull BootstrapContext<StructureSet> context,
+            @NotNull ResourceKey<StructureSet> baseKey
         ) {
             super(baseKey);
             this.context = context;
@@ -265,14 +321,17 @@ public class StructureSetBuilder {
         }
 
         @NotNull
-        public ConcentricRingsStructurePlacementBuilder preferredBiomes(@NotNull TagKey<Biome> preferredBiomes) {
+        public ConcentricRingsStructurePlacementBuilder preferredBiomes(
+            @NotNull TagKey<Biome> preferredBiomes
+        ) {
             this.preferredBiomes = preferredBiomes;
             return this;
         }
 
         @Override
         public StructureSetBuilder finishPlacement() {
-            return StructureSetBuilder.this.setPlacement(new ConcentricRingsStructurePlacement(
+            return StructureSetBuilder.this.setPlacement(
+                new ConcentricRingsStructurePlacement(
                     locateOffset,
                     frequencyReductionMethod,
                     frequency,
@@ -282,7 +341,8 @@ public class StructureSetBuilder {
                     spread,
                     count,
                     context.lookup(Registries.BIOME).getOrThrow(preferredBiomes)
-            ));
+                )
+            );
         }
     }
 }

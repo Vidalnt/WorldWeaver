@@ -1,5 +1,16 @@
 package org.betterx.wover.testmod.entrypoint;
 
+import java.util.HashMap;
+import java.util.Map;
+import net.fabricmc.api.ModInitializer;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BiomeTags;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.GenerationStep;
 import org.betterx.wover.biome.api.BiomeKey;
 import org.betterx.wover.biome.api.BiomeManager;
 import org.betterx.wover.biome.api.builder.BiomeBuilder;
@@ -14,46 +25,43 @@ import org.betterx.wover.generator.api.biomesource.WoverBiomeBuilder;
 import org.betterx.wover.generator.api.preset.WorldPresets;
 import org.betterx.wover.preset.api.WorldPresetManager;
 
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
-import net.minecraft.tags.BiomeTags;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.Biomes;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.levelgen.GenerationStep;
-
-import net.fabricmc.api.ModInitializer;
-
-import java.util.HashMap;
-import java.util.Map;
-
 public class TestModWoverWorldGenerator implements ModInitializer {
+
     // ModCore for the TestMod. TestMod's do not share the wover namespace,
     // but (like other Mods that include Wover) have a unique one
     public static final ModCore C = ModCore.create("wover-generator-testmod");
 
-    public static final BiomeKey<WoverBiomeBuilder.WoverBiome> NETHER_TEST_BIOME
-            = WoverBiomeBuilder.biomeKey(C.id("nether_test_biome"));
+    public static final BiomeKey<
+        WoverBiomeBuilder.WoverBiome
+    > NETHER_TEST_BIOME = WoverBiomeBuilder.biomeKey(C.id("nether_test_biome"));
 
-    public static final BiomeKey<WoverBiomeBuilder.WoverBiome> NETHER_MAIN_BIOME = WoverBiomeBuilder.biomeKey(C.id(
-            "nether_main_biome"));
-    public static final BiomeKey<WoverBiomeBuilder.WoverBiome> NETHER_SUB_BIOME = WoverBiomeBuilder.biomeKey(C.id(
-            "nether_sub_biome"));
-    public static final BiomeKey<WoverBiomeBuilder.WoverBiome> NETHER_WASTE_SUB_BIOME = WoverBiomeBuilder.biomeKey(C.id(
-            "wastes_sub_biome"));
+    public static final BiomeKey<
+        WoverBiomeBuilder.WoverBiome
+    > NETHER_MAIN_BIOME = WoverBiomeBuilder.biomeKey(C.id("nether_main_biome"));
+    public static final BiomeKey<
+        WoverBiomeBuilder.WoverBiome
+    > NETHER_SUB_BIOME = WoverBiomeBuilder.biomeKey(C.id("nether_sub_biome"));
+    public static final BiomeKey<
+        WoverBiomeBuilder.WoverBiome
+    > NETHER_WASTE_SUB_BIOME = WoverBiomeBuilder.biomeKey(
+        C.id("wastes_sub_biome")
+    );
 
-    public static final ConfiguredFeatureKey<NetherForrestVegetation> TEST_VEGETATION
-            = ConfiguredFeatureManager.netherForrestVegetation(C.id("test_vegetation"));
+    public static final ConfiguredFeatureKey<
+        NetherForrestVegetation
+    > TEST_VEGETATION = ConfiguredFeatureManager.netherForrestVegetation(
+        C.id("test_vegetation")
+    );
 
-    public static final PlacedConfiguredFeatureKey TEST_VEGETATION_PLACED
-            = PlacedFeatureManager.createKey(TEST_VEGETATION)
-                                  .setDecoration(GenerationStep.Decoration.VEGETAL_DECORATION);
+    public static final PlacedConfiguredFeatureKey TEST_VEGETATION_PLACED =
+        PlacedFeatureManager.createKey(TEST_VEGETATION).setDecoration(
+            GenerationStep.Decoration.VEGETAL_DECORATION
+        );
 
-    public static final PlacedFeatureKey TEST_SCATTERED_PLACED
-            = PlacedFeatureManager
-            .createKey(C.id("test_scattered_placed"))
-            .setDecoration(GenerationStep.Decoration.SURFACE_STRUCTURES);
+    public static final PlacedFeatureKey TEST_SCATTERED_PLACED =
+        PlacedFeatureManager.createKey(
+            C.id("test_scattered_placed")
+        ).setDecoration(GenerationStep.Decoration.SURFACE_STRUCTURES);
 
     @Override
     public void onInitialize() {
@@ -61,12 +69,12 @@ public class TestModWoverWorldGenerator implements ModInitializer {
 
         Map<ResourceKey<Biome>, Integer> testMap = new HashMap<>();
         ResourceKey<Biome> k2 = ResourceKey.create(
-                Registries.BIOME,
-                Identifier.parse(Biomes.NETHER_WASTES.location().toString())
+            Registries.BIOME,
+            Identifier.parse(Biomes.NETHER_WASTES.identifier().toString())
         );
         ResourceKey<Biome> k3 = ResourceKey.create(
-                Registries.BIOME,
-                Identifier.parse(Biomes.NETHER_WASTES.location().toString())
+            Registries.BIOME,
+            Identifier.parse(Biomes.NETHER_WASTES.identifier().toString())
         );
         testMap.put(Biomes.NETHER_WASTES, 10);
         testMap.put(k2, 20);
@@ -76,18 +84,17 @@ public class TestModWoverWorldGenerator implements ModInitializer {
 
         C.log.info("" + testMap.get(k3));
 
-        final BiomeKey<BiomeBuilder.Vanilla> RUNTIME_TEST_BIOME = BiomeManager.vanilla(C.id(
-                "runtime_test_biome"));
+        final BiomeKey<BiomeBuilder.Vanilla> RUNTIME_TEST_BIOME =
+            BiomeManager.vanilla(C.id("runtime_test_biome"));
 
         BiomeManager.BOOTSTRAP_BIOMES_WITH_DATA.subscribe(context -> {
-            RUNTIME_TEST_BIOME
-                    .bootstrap(context)
-                    .surface(Blocks.AMETHYST_BLOCK)
-                    .fogDensity(2.0F)
-                    .isNetherBiome()
-                    .hasPrecipitation(false)
-                    .structure(BiomeTags.HAS_RUINED_PORTAL_NETHER)
-                    .register();
+            RUNTIME_TEST_BIOME.bootstrap(context)
+                .surface(Blocks.AMETHYST_BLOCK)
+                .fogDensity(2.0F)
+                .isNetherBiome()
+                .hasPrecipitation(false)
+                .structure(BiomeTags.HAS_RUINED_PORTAL_NETHER)
+                .register();
         });
     }
 }

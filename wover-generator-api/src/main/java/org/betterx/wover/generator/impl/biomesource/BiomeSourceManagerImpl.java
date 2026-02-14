@@ -1,5 +1,26 @@
 package org.betterx.wover.generator.impl.biomesource;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import net.fabricmc.fabric.api.biome.v1.NetherBiomes;
+import net.fabricmc.fabric.api.biome.v1.TheEndBiomes;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.tags.BiomeTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeSource;
 import org.betterx.wover.biome.api.data.BiomeData;
 import org.betterx.wover.biome.api.data.BiomeDataRegistry;
 import org.betterx.wover.common.generator.api.biomesource.ReloadableBiomeSource;
@@ -16,130 +37,254 @@ import org.betterx.wover.generator.impl.biomesource.nether.WoverNetherBiomeSourc
 import org.betterx.wover.legacy.api.LegacyHelper;
 import org.betterx.wover.state.api.WorldState;
 import org.betterx.wover.tag.api.predefined.CommonBiomeTags;
-import org.betterx.wover.util.IdentifierSet;
-
-import com.mojang.serialization.MapCodec;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.tags.BiomeTags;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeSource;
-
-import net.fabricmc.fabric.api.biome.v1.NetherBiomes;
-import net.fabricmc.fabric.api.biome.v1.TheEndBiomes;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
+import org.betterx.wover.util.ResourceLocationSet;
 import org.jetbrains.annotations.ApiStatus;
 
 public class BiomeSourceManagerImpl {
-    public static final Identifier BIOME_CONFIG_FILE = LibWoverWorldGenerator.C.id("biome_config.json");
-    public static final Identifier MINECRAFT_WILDCARD
-            = IdentifierSet.WildcardIdentifier.forAllFrom(IntegrationCore.MINECRAFT);
+
+    public static final Identifier BIOME_CONFIG_FILE =
+        LibWoverWorldGenerator.C.id("biome_config.json");
+    public static final Identifier MINECRAFT_WILDCARD =
+        ResourceLocationSet.WildcardIdentifier.forAllFrom(
+            IntegrationCore.MINECRAFT
+        );
     public static final String BIOME_EXCLUSION_TAG = "exclude";
     public static final String NO_FABRIC_REGISTER_TAG = "no_fabric_register";
     public static final String END_CATCH_ALL = "*:is_end";
     public static final String NETHER_CATCH_ALL = "*:is_nether";
 
-    public static void register(Identifier location, MapCodec<? extends BiomeSource> codec) {
-        BuiltInRegistryManager.register(BuiltInRegistries.BIOME_SOURCE, location, codec);
+    public static void register(
+        Identifier location,
+        MapCodec<? extends BiomeSource> codec
+    ) {
+        BuiltInRegistryManager.register(
+            BuiltInRegistries.BIOME_SOURCE,
+            location,
+            codec
+        );
     }
 
     @ApiStatus.Internal
     public static void initialize() {
-        register(LibWoverWorldGenerator.C.id("nether_biome_source"), WoverNetherBiomeSource.CODEC);
+        register(
+            LibWoverWorldGenerator.C.id("nether_biome_source"),
+            WoverNetherBiomeSource.CODEC
+        );
 
-        register(LibWoverWorldGenerator.C.id("end_biome_source"), WoverEndBiomeSource.CODEC);
+        register(
+            LibWoverWorldGenerator.C.id("end_biome_source"),
+            WoverEndBiomeSource.CODEC
+        );
 
         if (LegacyHelper.isLegacyEnabled()) {
             register(
-                    LegacyHelper.BCLIB_CORE.id("nether_biome_source"),
-                    LegacyHelper.wrap(WoverNetherBiomeSource.CODEC)
+                LegacyHelper.BCLIB_CORE.id("nether_biome_source"),
+                LegacyHelper.wrap(WoverNetherBiomeSource.CODEC)
             );
-            register(LegacyHelper.BCLIB_CORE.id("end_biome_source"), LegacyHelper.wrap(WoverEndBiomeSource.CODEC));
+            register(
+                LegacyHelper.BCLIB_CORE.id("end_biome_source"),
+                LegacyHelper.wrap(WoverEndBiomeSource.CODEC)
+            );
         }
 
-        WorldLifecycle.RESOURCES_LOADED.subscribe(BiomeSourceManagerImpl::onResourcesLoaded);
+        WorldLifecycle.RESOURCES_LOADED.subscribe(
+            BiomeSourceManagerImpl::onResourcesLoaded
+        );
 
         DatapackRegistryBuilder.onElementLoad(
-                BiomeDataRegistry.BIOME_DATA_REGISTRY,
-                BiomeSourceManagerImpl::didLoadBiomeData
+            BiomeDataRegistry.BIOME_DATA_REGISTRY,
+            BiomeSourceManagerImpl::didLoadBiomeData
         );
     }
 
-    private static void didLoadBiomeData(ResourceKey<BiomeData> biomeDataKey, BiomeData biomeData) {
-        if (biomeDataKey.location().getNamespace().equals("minecraft")) return;
+    private static void didLoadBiomeData(
+        ResourceKey<BiomeData> biomeDataKey,
+        BiomeData biomeData
+    ) {
+        if (
+            biomeDataKey.identifier().getNamespace().equals("minecraft")
+        ) return;
 
-        final ResourceKey<Biome> biomeKey = BiomeDataRegistry.createBiomeKey(biomeDataKey);
-        if (!FABRIC_EXCLUDES.contains(biomeKey.location())) {
+        final ResourceKey<Biome> biomeKey = BiomeDataRegistry.createBiomeKey(
+            biomeDataKey
+        );
+        if (!FABRIC_EXCLUDES.contains(biomeKey.identifier())) {
             if (biomeData.isIntendedFor(BiomeTags.IS_NETHER)) {
                 for (var param : biomeData.generationData.parameterPoints()) {
                     if (!NetherBiomes.canGenerateInNether(biomeKey)) {
-                        LibWoverWorldGenerator.C.log.verbose("Adding Nether Biome to Fabric: " + biomeKey.location() + " (" + param + ")");
+                        LibWoverWorldGenerator.C.log.verbose(
+                            "Adding Nether Biome to Fabric: " +
+                                biomeKey.identifier() +
+                                " (" +
+                                param +
+                                ")"
+                        );
                         NetherBiomes.addNetherBiome(biomeKey, param);
                     }
                 }
             } else if (!TheEndBiomesHelper.canGenerateInEnd(biomeKey)) {
-                if (biomeData.isIntendedFor(CommonBiomeTags.IS_END_LAND) || biomeData.isIntendedFor(BiomeTags.IS_END)) {
-                    if (!TheEndBiomesHelper.canGenerateAsHighlandsBiome(biomeKey)) {
-                        LibWoverWorldGenerator.C.log.verbose("Adding End Highland Biome to Fabric: " + biomeKey.location());
-                        TheEndBiomes.addHighlandsBiome(biomeKey, genChance(biomeData, 1.0f));
+                if (
+                    biomeData.isIntendedFor(CommonBiomeTags.IS_END_LAND) ||
+                    biomeData.isIntendedFor(BiomeTags.IS_END)
+                ) {
+                    if (
+                        !TheEndBiomesHelper.canGenerateAsHighlandsBiome(
+                            biomeKey
+                        )
+                    ) {
+                        LibWoverWorldGenerator.C.log.verbose(
+                            "Adding End Highland Biome to Fabric: " +
+                                biomeKey.identifier()
+                        );
+                        TheEndBiomes.addHighlandsBiome(
+                            biomeKey,
+                            genChance(biomeData, 1.0f)
+                        );
                     }
-                    if (!TheEndBiomesHelper.canGenerateAsEndMidlands(biomeKey)) {
-                        LibWoverWorldGenerator.C.log.verbose("Adding End Highland Biome to Fabric: " + biomeKey.location());
-                        TheEndBiomes.addMidlandsBiome(biomeKey, biomeKey, genChance(biomeData, 0.5f));
+                    if (
+                        !TheEndBiomesHelper.canGenerateAsEndMidlands(biomeKey)
+                    ) {
+                        LibWoverWorldGenerator.C.log.verbose(
+                            "Adding End Highland Biome to Fabric: " +
+                                biomeKey.identifier()
+                        );
+                        TheEndBiomes.addMidlandsBiome(
+                            biomeKey,
+                            biomeKey,
+                            genChance(biomeData, 0.5f)
+                        );
                     }
-                } else if (biomeData.isIntendedFor(CommonBiomeTags.IS_END_HIGHLAND)) {
-                    if (!TheEndBiomesHelper.canGenerateAsHighlandsBiome(biomeKey)) {
-                        LibWoverWorldGenerator.C.log.verbose("Adding End Highland Biome to Fabric: " + biomeKey.location());
-                        TheEndBiomes.addHighlandsBiome(biomeKey, genChance(biomeData, 1.0f));
+                } else if (
+                    biomeData.isIntendedFor(CommonBiomeTags.IS_END_HIGHLAND)
+                ) {
+                    if (
+                        !TheEndBiomesHelper.canGenerateAsHighlandsBiome(
+                            biomeKey
+                        )
+                    ) {
+                        LibWoverWorldGenerator.C.log.verbose(
+                            "Adding End Highland Biome to Fabric: " +
+                                biomeKey.identifier()
+                        );
+                        TheEndBiomes.addHighlandsBiome(
+                            biomeKey,
+                            genChance(biomeData, 1.0f)
+                        );
                     }
-                } else if (biomeData.isIntendedFor(CommonBiomeTags.IS_END_CENTER)) {
-                    if (!TheEndBiomesHelper.canGenerateAsMainIslandBiome(biomeKey)) {
-                        LibWoverWorldGenerator.C.log.verbose("Adding End Center Biome to Fabric: " + biomeKey.location());
-                        TheEndBiomes.addMainIslandBiome(biomeKey, genChance(biomeData, 1.0f));
+                } else if (
+                    biomeData.isIntendedFor(CommonBiomeTags.IS_END_CENTER)
+                ) {
+                    if (
+                        !TheEndBiomesHelper.canGenerateAsMainIslandBiome(
+                            biomeKey
+                        )
+                    ) {
+                        LibWoverWorldGenerator.C.log.verbose(
+                            "Adding End Center Biome to Fabric: " +
+                                biomeKey.identifier()
+                        );
+                        TheEndBiomes.addMainIslandBiome(
+                            biomeKey,
+                            genChance(biomeData, 1.0f)
+                        );
                     }
-                } else if (biomeData.isIntendedFor(CommonBiomeTags.IS_SMALL_END_ISLAND)) {
-                    if (!TheEndBiomesHelper.canGenerateAsSmallIslandsBiome(biomeKey)) {
-                        LibWoverWorldGenerator.C.log.verbose("Adding Small End Island Biome to Fabric: " + biomeKey.location());
-                        TheEndBiomes.addSmallIslandsBiome(biomeKey, genChance(biomeData, 1.0f));
+                } else if (
+                    biomeData.isIntendedFor(CommonBiomeTags.IS_SMALL_END_ISLAND)
+                ) {
+                    if (
+                        !TheEndBiomesHelper.canGenerateAsSmallIslandsBiome(
+                            biomeKey
+                        )
+                    ) {
+                        LibWoverWorldGenerator.C.log.verbose(
+                            "Adding Small End Island Biome to Fabric: " +
+                                biomeKey.identifier()
+                        );
+                        TheEndBiomes.addSmallIslandsBiome(
+                            biomeKey,
+                            genChance(biomeData, 1.0f)
+                        );
                     }
-                } else if (biomeData.isIntendedFor(CommonBiomeTags.IS_END_MIDLAND)) {
-                    if (!TheEndBiomesHelper.canGenerateAsEndMidlands(biomeKey)) {
-                        if (biomeData instanceof WoverBiomeData woverData && woverData.parent != null) {
-                            LibWoverWorldGenerator.C.log.verbose("Adding End Midland Biome to Fabric: " + biomeKey.location());
-                            TheEndBiomes.addMidlandsBiome(woverData.parent, biomeKey, woverData.genChance);
-                        } else if (!TheEndBiomesHelper.canGenerateAsHighlandsBiome(biomeKey)) {
-                            LibWoverWorldGenerator.C.log.verbose("Adding End Highland Biome to Fabric: " + biomeKey.location());
-                            TheEndBiomes.addHighlandsBiome(biomeKey, genChance(biomeData, 0.5f));
+                } else if (
+                    biomeData.isIntendedFor(CommonBiomeTags.IS_END_MIDLAND)
+                ) {
+                    if (
+                        !TheEndBiomesHelper.canGenerateAsEndMidlands(biomeKey)
+                    ) {
+                        if (
+                            biomeData instanceof WoverBiomeData woverData &&
+                            woverData.parent != null
+                        ) {
+                            LibWoverWorldGenerator.C.log.verbose(
+                                "Adding End Midland Biome to Fabric: " +
+                                    biomeKey.identifier()
+                            );
+                            TheEndBiomes.addMidlandsBiome(
+                                woverData.parent,
+                                biomeKey,
+                                woverData.genChance
+                            );
+                        } else if (
+                            !TheEndBiomesHelper.canGenerateAsHighlandsBiome(
+                                biomeKey
+                            )
+                        ) {
+                            LibWoverWorldGenerator.C.log.verbose(
+                                "Adding End Highland Biome to Fabric: " +
+                                    biomeKey.identifier()
+                            );
+                            TheEndBiomes.addHighlandsBiome(
+                                biomeKey,
+                                genChance(biomeData, 0.5f)
+                            );
                         }
                     }
-                } else if (biomeData.isIntendedFor(CommonBiomeTags.IS_END_BARRENS)) {
+                } else if (
+                    biomeData.isIntendedFor(CommonBiomeTags.IS_END_BARRENS)
+                ) {
                     if (!TheEndBiomesHelper.canGenerateAsEndBarrens(biomeKey)) {
-                        if (biomeData instanceof WoverBiomeData woverData && woverData.parent != null) {
-                            LibWoverWorldGenerator.C.log.verbose("Adding End Barrens Biome to Fabric: " + biomeKey.location());
-                            TheEndBiomes.addBarrensBiome(woverData.parent, biomeKey, woverData.genChance);
-                        } else if (!TheEndBiomesHelper.canGenerateAsHighlandsBiome(biomeKey)) {
-                            LibWoverWorldGenerator.C.log.verbose("Adding End Highland Biome to Fabric: " + biomeKey.location());
-                            TheEndBiomes.addHighlandsBiome(biomeKey, genChance(biomeData, 0.33f));
+                        if (
+                            biomeData instanceof WoverBiomeData woverData &&
+                            woverData.parent != null
+                        ) {
+                            LibWoverWorldGenerator.C.log.verbose(
+                                "Adding End Barrens Biome to Fabric: " +
+                                    biomeKey.identifier()
+                            );
+                            TheEndBiomes.addBarrensBiome(
+                                woverData.parent,
+                                biomeKey,
+                                woverData.genChance
+                            );
+                        } else if (
+                            !TheEndBiomesHelper.canGenerateAsHighlandsBiome(
+                                biomeKey
+                            )
+                        ) {
+                            LibWoverWorldGenerator.C.log.verbose(
+                                "Adding End Highland Biome to Fabric: " +
+                                    biomeKey.identifier()
+                            );
+                            TheEndBiomes.addHighlandsBiome(
+                                biomeKey,
+                                genChance(biomeData, 0.33f)
+                            );
                         }
                     }
                 } else if (biomeData.isIntendedFor(BiomeTags.IS_END)) {
-                    if (!TheEndBiomesHelper.canGenerateAsHighlandsBiome(biomeKey)) {
-                        LibWoverWorldGenerator.C.log.verbose("Adding End Highland Biome to Fabric: " + biomeKey.location());
-                        TheEndBiomes.addHighlandsBiome(biomeKey, genChance(biomeData, 1.0f));
+                    if (
+                        !TheEndBiomesHelper.canGenerateAsHighlandsBiome(
+                            biomeKey
+                        )
+                    ) {
+                        LibWoverWorldGenerator.C.log.verbose(
+                            "Adding End Highland Biome to Fabric: " +
+                                biomeKey.identifier()
+                        );
+                        TheEndBiomes.addHighlandsBiome(
+                            biomeKey,
+                            genChance(biomeData, 1.0f)
+                        );
                     }
                 }
             }
@@ -147,11 +292,15 @@ public class BiomeSourceManagerImpl {
     }
 
     private static float genChance(BiomeData data, float defaultChance) {
-        return data instanceof WoverBiomeData woverData ? woverData.genChance : defaultChance;
+        return data instanceof WoverBiomeData woverData
+            ? woverData.genChance
+            : defaultChance;
     }
 
-    private static final Map<TagKey<Biome>, Set<Identifier>> EXCLUSIONS = new HashMap<>();
-    private static final Set<Identifier> FABRIC_EXCLUDES = new IdentifierSet();
+    private static final Map<TagKey<Biome>, Set<Identifier>> EXCLUSIONS =
+        new HashMap<>();
+    private static final Set<Identifier> FABRIC_EXCLUDES =
+        new ResourceLocationSet();
 
     public static void onResourcesLoaded(ResourceManager resourceManager) {
         EXCLUSIONS.clear();
@@ -160,20 +309,31 @@ public class BiomeSourceManagerImpl {
         //ensure vanilla biomes will not be registered with fabric
         FABRIC_EXCLUDES.add(MINECRAFT_WILDCARD);
 
-        DatapackConfigs
-                .instance()
-                .runForResource(resourceManager, BIOME_CONFIG_FILE, BiomeSourceManagerImpl::processBiomeConfigs);
+        DatapackConfigs.instance().runForResource(
+            resourceManager,
+            BIOME_CONFIG_FILE,
+            BiomeSourceManagerImpl::processBiomeConfigs
+        );
 
         if (WorldState.registryAccess() != null && !EXCLUSIONS.isEmpty()) {
             WorldState.registryAccess()
-                      .lookup(Registries.LEVEL_STEM)
-                      .ifPresent(levelStems -> levelStems.listElements().forEach(holder -> {
-                          if (holder.isBound()
-                                  && holder.value().generator().getBiomeSource() instanceof ReloadableBiomeSource bs
-                          ) {
-                              bs.reloadBiomes();
-                          }
-                      }));
+                .lookup(Registries.LEVEL_STEM)
+                .ifPresent(levelStems ->
+                    levelStems
+                        .listElements()
+                        .forEach(holder -> {
+                            if (
+                                holder.isBound() &&
+                                holder
+                                        .value()
+                                        .generator()
+                                        .getBiomeSource() instanceof
+                                    ReloadableBiomeSource bs
+                            ) {
+                                bs.reloadBiomes();
+                            }
+                        })
+                );
         }
     }
 
@@ -181,46 +341,88 @@ public class BiomeSourceManagerImpl {
         return EXCLUSIONS.getOrDefault(tag, Set.of());
     }
 
-    private static void addAllExclusions(List<TagKey<Biome>> tags, Identifier biome) {
-        tags.forEach(tag -> EXCLUSIONS.computeIfAbsent(tag, k -> new IdentifierSet()).add(biome));
+    private static void addAllExclusions(
+        List<TagKey<Biome>> tags,
+        Identifier biome
+    ) {
+        tags.forEach(tag ->
+            EXCLUSIONS.computeIfAbsent(tag, k -> new ResourceLocationSet()).add(
+                biome
+            )
+        );
     }
 
     private static void addBiomesToExclusion(
-            JsonElement value,
-            Consumer<Identifier> adder
+        JsonElement value,
+        Consumer<Identifier> adder
     ) {
         if (value.isJsonPrimitive()) {
-            adder.accept(IdentifierSet.WildcardIdentifier.parse(value.getAsString()));
+            adder.accept(
+                ResourceLocationSet.WildcardIdentifier.parse(
+                    value.getAsString()
+                )
+            );
         } else if (value.isJsonArray()) {
-            value.getAsJsonArray()
-                 .forEach(v -> adder.accept(IdentifierSet.WildcardIdentifier.parse(v.getAsString())));
+            value
+                .getAsJsonArray()
+                .forEach(v ->
+                    adder.accept(
+                        ResourceLocationSet.WildcardIdentifier.parse(
+                            v.getAsString()
+                        )
+                    )
+                );
         }
     }
 
-    private static void processBiomeConfigs(Identifier location, JsonObject root) {
+    private static void processBiomeConfigs(
+        Identifier location,
+        JsonObject root
+    ) {
         if (root.has(BIOME_EXCLUSION_TAG)) {
-            final JsonObject excludes = root.getAsJsonObject(BIOME_EXCLUSION_TAG);
-            excludes.asMap().forEach((key, value) -> {
-                if (key.equals(END_CATCH_ALL)) {
-                    final List<TagKey<Biome>> endTags = WoverEndBiomeSource.TAGS;
-                    addBiomesToExclusion(value, id -> addAllExclusions(endTags, id));
-                } else if (key.equals(NETHER_CATCH_ALL)) {
-                    final List<TagKey<Biome>> netherTags = WoverNetherBiomeSource.TAGS;
-                    addBiomesToExclusion(value, id -> addAllExclusions(netherTags, id));
-                } else {
-                    final TagKey<Biome> tag = TagKey.create(Registries.BIOME, Identifier.parse(key));
-                    final Set<Identifier> elements = EXCLUSIONS.computeIfAbsent(
-                            tag,
-                            k -> new IdentifierSet()
-                    );
-                    addBiomesToExclusion(value, elements::add);
-                }
-            });
+            final JsonObject excludes = root.getAsJsonObject(
+                BIOME_EXCLUSION_TAG
+            );
+            excludes
+                .asMap()
+                .forEach((key, value) -> {
+                    if (key.equals(END_CATCH_ALL)) {
+                        final List<TagKey<Biome>> endTags =
+                            WoverEndBiomeSource.TAGS;
+                        addBiomesToExclusion(value, id ->
+                            addAllExclusions(endTags, id)
+                        );
+                    } else if (key.equals(NETHER_CATCH_ALL)) {
+                        final List<TagKey<Biome>> netherTags =
+                            WoverNetherBiomeSource.TAGS;
+                        addBiomesToExclusion(value, id ->
+                            addAllExclusions(netherTags, id)
+                        );
+                    } else {
+                        final TagKey<Biome> tag = TagKey.create(
+                            Registries.BIOME,
+                            Identifier.parse(key)
+                        );
+                        final Set<Identifier> elements =
+                            EXCLUSIONS.computeIfAbsent(tag, k ->
+                                new ResourceLocationSet()
+                            );
+                        addBiomesToExclusion(value, elements::add);
+                    }
+                });
         }
 
         if (root.has(NO_FABRIC_REGISTER_TAG)) {
-            final JsonArray excludes = root.getAsJsonArray(NO_FABRIC_REGISTER_TAG);
-            excludes.forEach(v -> FABRIC_EXCLUDES.add(IdentifierSet.WildcardIdentifier.parse(v.getAsString())));
+            final JsonArray excludes = root.getAsJsonArray(
+                NO_FABRIC_REGISTER_TAG
+            );
+            excludes.forEach(v ->
+                FABRIC_EXCLUDES.add(
+                    ResourceLocationSet.WildcardIdentifier.parse(
+                        v.getAsString()
+                    )
+                )
+            );
         }
     }
 
@@ -229,11 +431,20 @@ public class BiomeSourceManagerImpl {
         try {
             biomes = biomeSource.possibleBiomes();
         } catch (Throwable e) {
-            LibWoverWorldGenerator.C.log.warn("Error getting possible biomes from BiomeSource", e);
+            LibWoverWorldGenerator.C.log.warn(
+                "Error getting possible biomes from BiomeSource",
+                e
+            );
         }
-        return biomeSource.getClass()
-                          .getSimpleName() + " (" + Integer.toHexString(biomeSource.hashCode()) + ")" +
-                "\n    biomes     = " + biomes.size() +
-                "\n    namespaces = " + WoverBiomeSourceImpl.getNamespaces(biomes);
+        return (
+            biomeSource.getClass().getSimpleName() +
+            " (" +
+            Integer.toHexString(biomeSource.hashCode()) +
+            ")" +
+            "\n    biomes     = " +
+            biomes.size() +
+            "\n    namespaces = " +
+            WoverBiomeSourceImpl.getNamespaces(biomes)
+        );
     }
 }

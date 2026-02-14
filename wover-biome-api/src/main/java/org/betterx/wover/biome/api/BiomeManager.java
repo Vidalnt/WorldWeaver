@@ -100,7 +100,7 @@ public class BiomeManager {
                 acc.lookupOrThrow(BiomeDataRegistry.BIOME_DATA_REGISTRY);
             Identifier id = biome
                 .unwrapKey()
-                .map(ResourceKey::location)
+                .map(ResourceKey::identifier)
                 .orElse(null);
             if (id != null) {
                 return reg

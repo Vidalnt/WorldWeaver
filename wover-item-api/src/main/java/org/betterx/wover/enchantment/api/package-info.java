@@ -54,7 +54,7 @@
  *                     .withEffect(
  *                             EnchantmentEffectComponents.ATTRIBUTES,
  *                             new EnchantmentAttributeEffect(
- *                                     ENCHANTMENT_ATTRIBUTE.unwrapKey().orElseThrow().location(),
+ *                                     ENCHANTMENT_ATTRIBUTE.unwrapKey().orElseThrow().identifier(),
  *                                     ENCHANTMENT_ATTRIBUTE,
  *                                     new LevelBasedValue.Lookup(
  *                                             List.of(6f, 12f, 18f),

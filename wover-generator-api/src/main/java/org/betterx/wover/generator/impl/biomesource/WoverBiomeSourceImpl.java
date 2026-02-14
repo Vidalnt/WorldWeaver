@@ -32,7 +32,7 @@ public class WoverBiomeSourceImpl {
         var namespaces = biomes
             .stream()
             .filter(h -> h.unwrapKey().isPresent())
-            .map(h -> h.unwrapKey().get().location().getNamespace())
+            .map(h -> h.unwrapKey().get().identifier().getNamespace())
             .toList();
 
         return namespaces
@@ -95,10 +95,12 @@ public class WoverBiomeSourceImpl {
                     .filter(holder -> holder.unwrapKey().isPresent())
                     .map(holder -> new Pair<>(holder, holder.unwrapKey().get()))
                     .filter(pair -> !addedBiomes.contains(pair.second))
-                    .filter(pair -> !excluded.contains(pair.second.location()))
+                    .filter(pair ->
+                        !excluded.contains(pair.second.identifier())
+                    )
                     .sorted(
                         Comparator.comparing(pair ->
-                            pair.second.location().toString()
+                            pair.second.identifier().toString()
                         )
                     )
                     .forEach(pair -> {

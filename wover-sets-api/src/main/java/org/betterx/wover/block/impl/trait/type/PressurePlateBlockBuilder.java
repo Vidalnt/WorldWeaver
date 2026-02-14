@@ -1,21 +1,24 @@
 package org.betterx.wover.block.impl.trait.type;
 
+import java.util.List;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.PushReaction;
 import org.betterx.wover.block.api.BlockDefinition;
 import org.betterx.wover.block.api.trait.*;
 import org.betterx.wover.block.impl.trait.BlockTraitImpl;
 import org.betterx.wover.core.api.ModCore;
 import org.betterx.wover.entrypoint.LibWoverSets;
-
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.material.PushReaction;
-
-import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
-public class PressurePlateBlockBuilder extends AbstractBlockTraitBuilder.Generic implements GenericBlockTrait.BuilderWithDefaults {
-    public static final GenericBlockTrait.BuilderWithDefaults BUILDER = new PressurePlateBlockBuilder();
+public class PressurePlateBlockBuilder
+    extends AbstractBlockTraitBuilder.Generic
+    implements GenericBlockTrait.BuilderWithDefaults
+{
+
+    public static final GenericBlockTrait.BuilderWithDefaults BUILDER =
+        new PressurePlateBlockBuilder();
     private final List<BlockTrait<?, ?>> DEFAULT;
 
     private PressurePlateBlockBuilder() {
@@ -28,13 +31,19 @@ public class PressurePlateBlockBuilder extends AbstractBlockTraitBuilder.Generic
     }
 
     private class Trait extends BlockTraitImpl.Generic {
+
         @Override
         public BlockTraitKey key() {
             return traitKey;
         }
 
         @Override
-        public void configure(BlockDefinition<Block, ? extends BlockDefinition<Block, ?>> definition) {
+        public void configure(
+            BlockDefinition<
+                Block,
+                ? extends BlockDefinition<Block, ?>
+            > definition
+        ) {
             if (ModCore.isDatagen()) {
                 definition.addTags(BlockTags.PRESSURE_PLATES);
                 if (definition.hasTrait(BlockTraits.WOOD_BLOCK)) {
@@ -44,10 +53,10 @@ public class PressurePlateBlockBuilder extends AbstractBlockTraitBuilder.Generic
             }
 
             definition
-                    .forceSolidOn()
-                    .noCollission()
-                    .strength(0.5F)
-                    .pushReaction(PushReaction.DESTROY);
+                .forceSolidOn()
+                .noCollision()
+                .strength(0.5F)
+                .pushReaction(PushReaction.DESTROY);
         }
     }
 }

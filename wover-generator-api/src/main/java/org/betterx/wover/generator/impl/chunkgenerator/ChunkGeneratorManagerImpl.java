@@ -178,7 +178,7 @@ public class ChunkGeneratorManagerImpl {
                                                 .feature()
                                                 .unwrapKey()
                                                 .get()
-                                                .location()
+                                                .identifier()
                                                 .getNamespace();
                                         }
 
@@ -234,14 +234,14 @@ public class ChunkGeneratorManagerImpl {
             final var preset = cfg.wover_getConfiguredWorldPreset();
             sb
                 .append("\n    preset     = ")
-                .append(preset == null ? "none" : preset.location());
+                .append(preset == null ? "none" : preset.identifier());
         }
 
         if (generator instanceof NoiseBasedChunkGenerator noise) {
             final var key = noise.generatorSettings().unwrapKey();
             sb
                 .append("\n    noise      = ")
-                .append(key.isEmpty() ? "custom" : key.get().location());
+                .append(key.isEmpty() ? "custom" : key.get().identifier());
         }
 
         if (generator instanceof ChunkGeneratorAccessor) {
@@ -285,7 +285,7 @@ public class ChunkGeneratorManagerImpl {
         for (Map.Entry<ResourceKey<LevelStem>, LevelStem> entry : levels) {
             output
                 .append("\n - ")
-                .append(entry.getKey().location())
+                .append(entry.getKey().identifier())
                 .append(": ")
                 .append("\n     ")
                 .append(

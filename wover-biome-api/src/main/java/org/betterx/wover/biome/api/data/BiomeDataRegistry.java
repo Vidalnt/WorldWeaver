@@ -51,7 +51,7 @@ public class BiomeDataRegistry {
     public static ResourceKey<BiomeData> createKey(
         ResourceKey<Biome> biomeKey
     ) {
-        return BiomeDataRegistryImpl.createKey(biomeKey.location());
+        return BiomeDataRegistryImpl.createKey(biomeKey.identifier());
     }
 
     /**
@@ -63,6 +63,6 @@ public class BiomeDataRegistry {
     public static ResourceKey<Biome> createBiomeKey(
         ResourceKey<BiomeData> biomeDataKey
     ) {
-        return ResourceKey.create(Registries.BIOME, biomeDataKey.location());
+        return ResourceKey.create(Registries.BIOME, biomeDataKey.identifier());
     }
 }

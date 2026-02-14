@@ -336,14 +336,11 @@ javadoc {
                 'implNote:a:Implementation Note:'
         )
         header = "<script type=\"text/javascript\" src=\"../../../../../contrib/highlight/highlight.min.js\"></script>" +
-                " <link rel=\"stylesheet\" href=\"../../../../../contrib/highlight/styles/default.min.css\"></link>" +
-                " <script>window.onload = function () {\n" +
-                "    var allPre, i, j;\n" +
-                "    allPre = document.getElementsByTagName(\"pre\");\n" +
-                "    console.log(allPre); \n" +
-                "    for (i = 0, j = allPre.length; i < j; i++) {\n" +
-                "        hljs.highlightElement(allPre[i]);\n" +
-                "    }\n" +
+                "<link rel=\"stylesheet\" href=\"../../../../../contrib/highlight/styles/default.min.css\"></link>" +
+                "<script>window.onload = function() {" +
+                "  document.querySelectorAll('pre').forEach(function(block) {" +
+                "    hljs.highlightElement(block);" +
+                "  });" +
                 "};</script>"
 
         stylesheetFile = file("javadoc/wover.css")

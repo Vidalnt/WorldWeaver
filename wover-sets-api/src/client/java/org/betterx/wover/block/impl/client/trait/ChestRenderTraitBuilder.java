@@ -1,5 +1,10 @@
 package org.betterx.wover.block.impl.client.trait;
 
+import static net.minecraft.client.renderer.Sheets.CHEST_MAPPER;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.world.level.block.Block;
 import org.betterx.wover.block.api.BlockDefinition;
 import org.betterx.wover.block.api.client.trait.ChestRenderTrait;
 import org.betterx.wover.block.api.trait.AbstractBlockTraitBuilder;
@@ -8,17 +13,15 @@ import org.betterx.wover.block.api.trait.BlockTraitKey;
 import org.betterx.wover.block.impl.trait.BlockTraitImpl;
 import org.betterx.wover.core.api.ModCore;
 import org.betterx.wover.entrypoint.LibWoverSets;
-
-import static net.minecraft.client.renderer.Sheets.CHEST_MAPPER;
-import net.minecraft.world.level.block.Block;
-
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
 import org.jetbrains.annotations.Nullable;
 
-public class ChestRenderTraitBuilder extends AbstractBlockTraitBuilder<Block, ChestRenderTrait> implements ChestRenderTrait.Builder {
-    public static final ChestRenderTrait.Builder BUILDER = new ChestRenderTraitBuilder();
+public class ChestRenderTraitBuilder
+    extends AbstractBlockTraitBuilder<Block, ChestRenderTrait>
+    implements ChestRenderTrait.Builder
+{
+
+    public static final ChestRenderTrait.Builder BUILDER =
+        new ChestRenderTraitBuilder();
 
     protected ChestRenderTraitBuilder() {
         super(BlockTraitKey.ofUnique(LibWoverSets.C, "chest_renderer"));
@@ -31,7 +34,11 @@ public class ChestRenderTraitBuilder extends AbstractBlockTraitBuilder<Block, Ch
     }
 
     @Environment(EnvType.CLIENT)
-    private class Trait extends BlockTraitImpl<Block, ChestRenderTrait> implements ChestRenderTrait {
+    private class Trait
+        extends BlockTraitImpl<Block, ChestRenderTrait>
+        implements ChestRenderTrait
+    {
+
         private ChestMaterialSet material;
 
         @Override
@@ -40,13 +47,18 @@ public class ChestRenderTraitBuilder extends AbstractBlockTraitBuilder<Block, Ch
         }
 
         @Override
-        public void configure(BlockDefinition<Block, ? extends BlockDefinition<Block, ?>> definition) {
-            final var location = definition.blockKey.location();
+        public void configure(
+            BlockDefinition<
+                Block,
+                ? extends BlockDefinition<Block, ?>
+            > definition
+        ) {
+            final var location = definition.blockKey.identifier();
 
             material = new ChestMaterialSet(
-                    CHEST_MAPPER.apply(location),
-                    CHEST_MAPPER.apply(location.withSuffix("_left")),
-                    CHEST_MAPPER.apply(location.withSuffix("_right"))
+                CHEST_MAPPER.apply(location),
+                CHEST_MAPPER.apply(location.withSuffix("_left")),
+                CHEST_MAPPER.apply(location.withSuffix("_right"))
             );
         }
 

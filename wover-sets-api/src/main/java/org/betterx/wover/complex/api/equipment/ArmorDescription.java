@@ -53,7 +53,7 @@ public record ArmorDescription<I extends Item>(
                 : ItemRecipeTraitBuilder.BUILDER.with((key, item, context) ->
                       addRecipe(
                           context,
-                          itemDefinition.itemKey.location(),
+                          itemDefinition.itemKey.identifier(),
                           item,
                           equipmentSet.armorTier,
                           slot,

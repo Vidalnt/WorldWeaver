@@ -1,17 +1,17 @@
 package org.betterx.wover.biome.impl.modification.predicates;
 
-import org.betterx.wover.biome.api.modification.predicates.BiomePredicate;
-
 import com.mojang.serialization.Codec;
 import net.minecraft.util.KeyDispatchDataCodec;
+import org.betterx.wover.biome.api.modification.predicates.BiomePredicate;
 
 public record LocationPathContains(String needle) implements BiomePredicate {
-    public static final KeyDispatchDataCodec<LocationPathContains> CODEC = KeyDispatchDataCodec
-            .of(Codec.STRING
-                    .xmap(LocationPathContains::new, LocationPathContains::needle)
-                    .fieldOf("needle")
-            );
-
+    public static final KeyDispatchDataCodec<LocationPathContains> CODEC =
+        KeyDispatchDataCodec.of(
+            Codec.STRING.xmap(
+                LocationPathContains::new,
+                LocationPathContains::needle
+            ).fieldOf("needle")
+        );
 
     @Override
     public KeyDispatchDataCodec<? extends BiomePredicate> codec() {
@@ -20,6 +20,6 @@ public record LocationPathContains(String needle) implements BiomePredicate {
 
     @Override
     public boolean test(Context ctx) {
-        return ctx.biomeKey.location().getPath().contains(needle);
+        return ctx.biomeKey.identifier().getPath().contains(needle);
     }
 }

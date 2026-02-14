@@ -48,7 +48,7 @@ public class StructureSetManager {
      * @return The {@link StructureSetKey}
      */
     public static StructureSetKey createKey(StructureKey<?, ?, ?> structure) {
-        return createKey(structure.key().location());
+        return createKey(structure.key().identifier());
     }
 
     /**

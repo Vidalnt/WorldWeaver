@@ -171,7 +171,7 @@ public class WoverChunkGenerator
     ) {
         LibWoverWorldGenerator.C.log.info(
             "Enforcing Correct Generator for " +
-                dimensionKey.location().toString() +
+                dimensionKey.identifier().toString() +
                 "."
         );
 
